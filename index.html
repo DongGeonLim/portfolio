@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>작가 임동건 | 포트폴리오</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #121212; 
+            --btn-gray: #2a2a2a; 
+            --cube-size: 160px;
+            --half-size: 80px;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Pretendard', sans-serif;
+            overflow: hidden; 
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            background-image: 
+                radial-gradient(600px circle at 20% 10%, rgba(124,92,255,0.15), transparent 50%),
+                radial-gradient(600px circle at 80% 30%, rgba(45,212,191,0.08), transparent 50%);
+            touch-action: none;
+        }
+
+        .hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 40px; }
+        .title-area h1 { font-size: 2.5rem; margin: 0; font-weight: 700; }
+        .title-area p { color: #888; margin: 10px 0 25px; font-size: 1rem; }
+
+        .social-group { display: flex; gap: 15px; justify-content: center; z-index: 100; }
+        .social-btn {
+            width: 50px; height: 50px; background-color: var(--btn-gray);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            text-decoration: none; color: white; font-size: 1.4rem; transition: all 0.3s ease;
+        }
+
+        .scene { 
+            width: var(--cube-size); height: var(--cube-size); 
+            perspective: 1200px; margin-top: 40px; cursor: grab;
+        }
+        .scene:active { cursor: grabbing; }
+
+        .cube {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-15deg) rotateY(-25deg);
+            /* 기본적으로는 부드러운 움직임을 위해 transition 유지 */
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 드래그 중일 때만 부드러운 애니메이션을 꺼서 마우스를 즉각 따라오게 함 */
+        .cube.dragging { transition: none; }
+
+        .face {
+            position: absolute; width: var(--cube-size); height: var(--cube-size);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: bold; color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            backface-visibility: visible;
+        }
+
+        /* 면 색상 설정 */
+        .front  { background: #000080; transform: rotateY(0deg) translateZ(var(--half-size)); }
+        .back   { background: #4A8FD7; transform: rotateY(180deg) translateZ(var(--half-size)); }
+        .right  { background: #9D4EDD; transform: rotateY(90deg) translateZ(var(--half-size)); }
+        .left   { background: #7B1B7E; transform: rotateY(-90deg) translateZ(var(--half-size)); }
+        .top    { background: #F5A347; transform: rotateX(90deg) translateZ(var(--half-size)); }
+        .bottom { background: #8BAD2B; transform: rotateX(-90deg) translateZ(var(--half-size)); }
+
+        .cube.unfolded .front  { transform: rotateY(0deg) translateZ(0); }
+        .cube.unfolded .left   { transform: rotateY(0deg) translateX(calc(var(--cube-size) * -1)); }
+        .cube.unfolded .right  { transform: rotateY(0deg) translateX(var(--cube-size)); }
+        .cube.unfolded .back   { transform: rotateY(0deg) translateX(calc(var(--cube-size) * 2)); }
+        .cube.unfolded .top    { transform: rotateX(0deg) translateY(calc(var(--cube-size) * -1)); }
+        .cube.unfolded .bottom { transform: rotateX(0deg) translateY(var(--cube-size)); }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="title-area">
+            <h1>작가 임동건</h1>
+            <p>몰입형 콘텐츠 - 기획부터 개발까지</p>
+            <div class="social-group">
+                <a href="http://www.instagram.com/_hsllw" target="_blank" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://github.com/DongGeonLim" target="_blank" class="social-btn"><i class="fa-brands fa-github"></i></a>
+            </div>
+        </div>
+
+        <div class="scene" id="cubeScene">
+            <div class="cube" id="interactiveCube">
+                <div class="face front">앞쪽</div>
+                <div class="face back">뒤쪽</div>
+                <div class="face right">오른쪽</div>
+                <div class="face left">왼쪽</div>
+                <div class="face top">맨 위</div>
+                <div class="face bottom">맨 아래</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cube = document.getElementById('interactiveCube');
+        const scene = document.getElementById('cubeScene');
+        
+        let isUnfolded = false;
+        let isDragging = false;
+        let startX, startY;
+        let currentX = -25, currentY = -15; 
+
+        // 1. 드래그 시작 (마우스 다운 / 터치 스타트)
+        const startAction = (e) => {
+            if (isUnfolded) return;
+            isDragging = true;
+            
+            // 초기 위치 저장
+            startX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            startY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            
+            cube.classList.add('dragging');
+        };
+
+        // 2. 드래그 중 (마우스 무브 / 터치 무브)
+        const moveAction = (e) => {
+            if (!isDragging || isUnfolded) return;
+
+            const x = e.clientX || (e.touches ? e.touches[0].clientX : startX);
+            const y = e.clientY || (e.touches ? e.touches[0].clientY : startY);
+            
+            const dx = x - startX;
+            const dy = y - startY;
+
+            // 실시간 회전 적용
+            cube.style.transform = `rotateX(${currentY - dy * 0.5}deg) rotateY(${currentX + dx * 0.5}deg)`;
+        };
+
+        // 3. 드래그 종료 (마우스 업 / 터치 엔드)
+        const endAction = (e) => {
+            if (!isDragging) return;
+            
+            // 마지막 위치를 기준으로 각도 업데이트
+            const x = e.clientX || (e.changedTouches ? e.changedTouches[0].clientX : startX);
+            const y = e.clientY || (e.changedTouches ? e.changedTouches[0].clientY : startY);
+            
+            currentX += (x - startX) * 0.5;
+            currentY -= (y - startY) * 0.5;
+
+            // 모든 플래그 초기화
+            isDragging = false;
+            cube.classList.remove('dragging');
+        };
+
+        // 4. 클릭 시 전개도 로직 (짧은 클릭만 인식하도록 보정)
+        scene.addEventListener('click', (e) => {
+            // 많이 움직였다면 클릭이 아닌 드래그로 간주하고 무시
+            if (isUnfolded) {
+                cube.classList.remove('unfolded');
+                isUnfolded = false;
+                setTimeout(() => {
+                    currentX = -25; currentY = -15;
+                    cube.style.transform = `rotateX(-15deg) rotateY(-25deg)`;
+                }, 300);
+            } else {
+                currentX = 0; currentY = 0;
+                cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
+                setTimeout(() => {
+                    cube.classList.add('unfolded');
+                    isUnfolded = true;
+                }, 300);
+            }
+        });
+
+        // 이벤트 리스너 등록
+        window.addEventListener('mousedown', startAction);
+        window.addEventListener('mousemove', moveAction);
+        window.addEventListener('mouseup', endAction);
+        
+        window.addEventListener('touchstart', startAction, { passive: false });
+        window.addEventListener('touchmove', moveAction, { passive: false });
+        window.addEventListener('touchend', endAction);
+    </script>
+</body>
+</html>
