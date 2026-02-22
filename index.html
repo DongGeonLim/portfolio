@@ -26,7 +26,6 @@
         .container {
             display: flex;
             width: 100vw; height: 100vh;
-            /* 초기 상태는 스크롤 잠금 */
             overflow-x: hidden; 
             overflow-y: hidden;
             scroll-snap-type: x mandatory; 
@@ -50,7 +49,6 @@
             position: relative;
         }
 
-        /* 페이지 인디케이터 (전개도 스타일) */
         .page-indicator {
             position: fixed;
             bottom: 40px;
@@ -62,15 +60,11 @@
             gap: 8px;
             z-index: 1000;
             pointer-events: none;
-            /* 초기 상태 숨김 */
             opacity: 0;
             transition: opacity 0.5s ease;
         }
 
-        /* 전개도 상태일 때 나타남 */
-        .page-indicator.active {
-            opacity: 1;
-        }
+        .page-indicator.active { opacity: 1; }
 
         .dot {
             width: 8px;
@@ -134,6 +128,17 @@
             transition: transform 0.6s ease-in-out;
         }
 
+        /* 번호 숨김 설정 */
+        .face span {
+            font-size: 2rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .cube.unfolded .face span {
+            opacity: 1;
+        }
+
         .front  { background: #000080; transform: rotateY(0deg) translateZ(var(--half-size)); }
         .back   { background: #4A8FD7; transform: rotateY(180deg) translateZ(var(--half-size)); }
         .right  { background: #9D4EDD; transform: rotateY(90deg) translateZ(var(--half-size)); }
@@ -183,11 +188,11 @@
                 <div class="scene" id="cubeScene">
                     <div class="cube" id="interactiveCube">
                         <div class="face front">click!</div>
-                        <div class="face back"></div>
-                        <div class="face right"></div>
-                        <div class="face left"></div>
-                        <div class="face top"></div>
-                        <div class="face bottom"></div>
+                        <div class="face back"><span>1</span></div>
+                        <div class="face right"><span>2</span></div>
+                        <div class="face left"><span>3</span></div>
+                        <div class="face top"><span>4</span></div>
+                        <div class="face bottom"><span>5</span></div>
                     </div>
                 </div>
             </div>
@@ -225,20 +230,15 @@
             updateIndicator();
         };
 
-        // 1. 페이지 드래그 스크롤 (전개도 상태일 때만 작동)
         container.addEventListener('mousedown', (e) => {
-            // 전개도가 펼쳐졌을 때만 드래그 가능하도록 제한
             if (!isUnfolded) return; 
-            
             isPageScrolling = true;
             container.style.scrollSnapType = 'none'; 
             container.style.scrollBehavior = 'auto';
-            
             scrollStartX = e.pageX - container.offsetLeft;
             scrollLeft = container.scrollLeft;
         });
 
-        // 2. 큐브 드래그 시작 (접힌 상태에서만 작동)
         scene.addEventListener('mousedown', (e) => {
             if (isUnfolded || !e.target.classList.contains('face')) return;
             isDraggingCube = true;
@@ -247,7 +247,6 @@
             cube.classList.add('dragging');
         });
 
-        // 3. 이동 및 종료 통합 관리
         window.addEventListener('mousemove', (e) => {
             if (isPageScrolling) {
                 const x = e.pageX - container.offsetLeft;
@@ -283,52 +282,74 @@
             }
         });
 
-        // 큐브 클릭 (상태 전환)
         scene.addEventListener('click', () => {
             if (isUnfolded) {
-                // 접을 때
                 cube.classList.remove('unfolded');
-                indicator.classList.remove('active'); // 인디케이터 숨김
-                container.style.overflowX = 'hidden'; // 스크롤 잠금
+                indicator.classList.remove('active');
+                container.style.overflowX = 'hidden';
                 isUnfolded = false;
                 setTimeout(() => {
                     currentX = -25; currentY = -15;
                     cube.style.transform = `rotateX(-15deg) rotateY(-25deg)`;
                 }, 50); 
             } else {
-                // 펼칠 때
                 currentX = 0; currentY = 0;
                 cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
                 setTimeout(() => { 
                     cube.classList.add('unfolded'); 
-                    indicator.classList.add('active'); // 인디케이터 표시
-                    container.style.overflowX = 'auto'; // 스크롤 허용
+                    indicator.classList.add('active');
+                    container.style.overflowX = 'auto';
                     isUnfolded = true; 
                 }, 100);
             }
         });
 
-        // 모바일 터치 대응
         container.addEventListener('scroll', updateIndicator);
         
+        // 모바일 터치 대응 수정
         scene.addEventListener('touchstart', (e) => {
             if (isUnfolded || !e.target.classList.contains('face')) return;
+            
             isDraggingCube = true;
+            // 터치 시작 시점의 좌표 저장
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
+            
+            // 핵심 수정: 터치 시작 시 기존에 회전되어 있던 각도를 기준으로 잡습니다.
+            // currentX와 currentY가 이미 최신화되어 있으므로 별도의 추가 연산은 필요 없으나,
+            // dragging 클래스를 통해 transition을 끄는 타이밍을 확실히 합니다.
             cube.classList.add('dragging');
         }, { passive: true });
 
         window.addEventListener('touchmove', (e) => {
             if (!isDraggingCube) return;
+
+            // 현재 터치 위치와 시작 위치의 차이 계산
             const dx = e.touches[0].clientX - startX;
             const dy = e.touches[0].clientY - startY;
+            
             const absY = Math.abs(currentY) % 360;
             const direction = (absY > 90 && absY < 270) ? -1 : 1;
+
+            // 실시간으로 큐브를 회전시킵니다.
+            // 기존 currentX, currentY에 이동량(dx, dy)을 더해 자연스럽게 이어지도록 합니다.
             cube.style.transform = `rotateX(${currentY - dy * 0.5}deg) rotateY(${currentX + (dx * 0.5 * direction)}deg)`;
         }, { passive: true });
 
-        window.addEventListener('touchend', () => {
+        window.addEventListener('touchend', (e) => {
+            if (!isDraggingCube) return;
+
+            // 터치가 끝나는 시점에 최종 각도를 currentX, currentY에 저장합니다.
+            // e.changedTouches를 사용하여 마지막 위치를 가져옵니다.
+            const dx = e.changedTouches[0].clientX - startX;
+            const dy = e.changedTouches[0].clientY - startY;
+
+            const absY = Math.abs(currentY) % 360;
+            const direction = (absY > 90 && absY < 270) ? -1 : 1;
+
+            currentX += dx * 0.5 * direction;
+            currentY -= dy * 0.5;
+
             isDraggingCube = false;
             cube.classList.remove('dragging');
         });
