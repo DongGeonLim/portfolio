@@ -26,7 +26,8 @@
         .container {
             display: flex;
             width: 100vw; height: 100vh;
-            overflow-x: auto; 
+            /* 초기 상태는 스크롤 잠금 */
+            overflow-x: hidden; 
             overflow-y: hidden;
             scroll-snap-type: x mandatory; 
             scroll-behavior: smooth;
@@ -49,7 +50,7 @@
             position: relative;
         }
 
-        /* 페이지 인디케이터 (아이폰 스타일 전개도 배치) */
+        /* 페이지 인디케이터 (전개도 스타일) */
         .page-indicator {
             position: fixed;
             bottom: 40px;
@@ -61,6 +62,14 @@
             gap: 8px;
             z-index: 1000;
             pointer-events: none;
+            /* 초기 상태 숨김 */
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* 전개도 상태일 때 나타남 */
+        .page-indicator.active {
+            opacity: 1;
         }
 
         .dot {
@@ -83,7 +92,15 @@
             box-shadow: 0 0 8px var(--indicator-active);
         }
 
-        .hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 40px; color: white; }
+        .hero { 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 70px; 
+            color: white; 
+            margin-top: -10px;
+        }
         .title-area h1 { font-size: 2.5rem; margin: 0; font-weight: 700; }
         .title-area p { color: #888; margin: 10px 0 25px; font-size: 1rem; }
 
@@ -165,12 +182,12 @@
 
                 <div class="scene" id="cubeScene">
                     <div class="cube" id="interactiveCube">
-                        <div class="face front">앞쪽</div>
-                        <div class="face back">뒤쪽</div>
-                        <div class="face right">오른쪽</div>
-                        <div class="face left">왼쪽</div>
-                        <div class="face top">맨 위</div>
-                        <div class="face bottom">맨 아래</div>
+                        <div class="face front">click!</div>
+                        <div class="face back"></div>
+                        <div class="face right"></div>
+                        <div class="face left"></div>
+                        <div class="face top"></div>
+                        <div class="face bottom"></div>
                     </div>
                 </div>
             </div>
@@ -186,6 +203,7 @@
         const cube = document.getElementById('interactiveCube');
         const scene = document.getElementById('cubeScene');
         const container = document.getElementById('mainContainer');
+        const indicator = document.getElementById('indicator');
         const dots = [document.querySelector('.page0'), document.querySelector('.page1'), document.querySelector('.page2')];
 
         let isUnfolded = false;
@@ -207,18 +225,20 @@
             updateIndicator();
         };
 
-        // 1. 페이지 드래그 스크롤 (PC용)
+        // 1. 페이지 드래그 스크롤 (전개도 상태일 때만 작동)
         container.addEventListener('mousedown', (e) => {
-            // 전개도가 펼쳐진 상태에서는 어디를 잡아도 페이지 스크롤 허용
-            if (!isUnfolded && e.target.classList.contains('face')) return;
+            // 전개도가 펼쳐졌을 때만 드래그 가능하도록 제한
+            if (!isUnfolded) return; 
             
             isPageScrolling = true;
+            container.style.scrollSnapType = 'none'; 
             container.style.scrollBehavior = 'auto';
+            
             scrollStartX = e.pageX - container.offsetLeft;
             scrollLeft = container.scrollLeft;
         });
 
-        // 2. 큐브 드래그 시작 (회전 - 접힌 상태에서만 작동)
+        // 2. 큐브 드래그 시작 (접힌 상태에서만 작동)
         scene.addEventListener('mousedown', (e) => {
             if (isUnfolded || !e.target.classList.contains('face')) return;
             isDraggingCube = true;
@@ -246,6 +266,7 @@
         window.addEventListener('mouseup', (e) => {
             if (isPageScrolling) {
                 isPageScrolling = false;
+                container.style.scrollSnapType = 'x mandatory';
                 container.style.scrollBehavior = 'smooth';
                 const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
                 container.scrollLeft = pageIndex * window.innerWidth;
@@ -262,30 +283,36 @@
             }
         });
 
-        // 큐브 클릭 (전개도)
+        // 큐브 클릭 (상태 전환)
         scene.addEventListener('click', () => {
             if (isUnfolded) {
+                // 접을 때
                 cube.classList.remove('unfolded');
+                indicator.classList.remove('active'); // 인디케이터 숨김
+                container.style.overflowX = 'hidden'; // 스크롤 잠금
                 isUnfolded = false;
                 setTimeout(() => {
                     currentX = -25; currentY = -15;
                     cube.style.transform = `rotateX(-15deg) rotateY(-25deg)`;
                 }, 50); 
             } else {
+                // 펼칠 때
                 currentX = 0; currentY = 0;
                 cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
-                setTimeout(() => { cube.classList.add('unfolded'); isUnfolded = true; }, 100);
+                setTimeout(() => { 
+                    cube.classList.add('unfolded'); 
+                    indicator.classList.add('active'); // 인디케이터 표시
+                    container.style.overflowX = 'auto'; // 스크롤 허용
+                    isUnfolded = true; 
+                }, 100);
             }
         });
 
-        // 모바일 터치 대응 (scroll-snap 활용)
+        // 모바일 터치 대응
         container.addEventListener('scroll', updateIndicator);
         
         scene.addEventListener('touchstart', (e) => {
-            // 전개도 상태에서는 터치 이벤트를 큐브 회전이 가로채지 않도록 함
-            if (isUnfolded) return;
-            if (!e.target.classList.contains('face')) return;
-            
+            if (isUnfolded || !e.target.classList.contains('face')) return;
             isDraggingCube = true;
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
