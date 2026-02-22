@@ -29,7 +29,7 @@
             overflow-x: hidden; 
             overflow-y: hidden;
             scroll-snap-type: x mandatory; 
-            scroll-behavior: smooth;
+            /* scroll-behavior: smooth; -> JS에서 동적으로 제어하기 위해 기본값은 제거 권장 */
             -ms-overflow-style: none;
             scrollbar-width: none;
             cursor: grab;
@@ -51,7 +51,7 @@
 
         .page-indicator {
             position: fixed;
-            bottom: 40px;
+            bottom: 35px;
             left: 50%;
             transform: translateX(-50%);
             display: grid;
@@ -128,7 +128,6 @@
             transition: transform 0.6s ease-in-out;
         }
 
-        /* 번호 숨김 설정 */
         .face span {
             font-size: 2rem;
             opacity: 0;
@@ -225,10 +224,14 @@
             });
         };
 
-        window.onload = () => {
-            container.scrollLeft = window.innerWidth;
+        // 새로고침 시 즉시 이동 보정
+        window.addEventListener('load', () => {
+            // scrollTo를 사용하여 애니메이션 없이 즉시 좌표 지정
+            container.scrollTo({ left: window.innerWidth, behavior: 'auto' });
             updateIndicator();
-        };
+            // 이후 부드러운 스크롤을 위해 behavior 활성화 가능
+            setTimeout(() => { container.style.scrollBehavior = 'smooth'; }, 100);
+        });
 
         container.addEventListener('mousedown', (e) => {
             if (!isUnfolded) return; 
@@ -306,50 +309,35 @@
 
         container.addEventListener('scroll', updateIndicator);
         
-        // 모바일 터치 대응 수정
+        // 모바일 터치 로직 개선 (연속 회전 가능)
         scene.addEventListener('touchstart', (e) => {
             if (isUnfolded || !e.target.classList.contains('face')) return;
-            
             isDraggingCube = true;
-            // 터치 시작 시점의 좌표 저장
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
-            
-            // 핵심 수정: 터치 시작 시 기존에 회전되어 있던 각도를 기준으로 잡습니다.
-            // currentX와 currentY가 이미 최신화되어 있으므로 별도의 추가 연산은 필요 없으나,
-            // dragging 클래스를 통해 transition을 끄는 타이밍을 확실히 합니다.
             cube.classList.add('dragging');
         }, { passive: true });
 
         window.addEventListener('touchmove', (e) => {
             if (!isDraggingCube) return;
-
-            // 현재 터치 위치와 시작 위치의 차이 계산
             const dx = e.touches[0].clientX - startX;
             const dy = e.touches[0].clientY - startY;
-            
             const absY = Math.abs(currentY) % 360;
             const direction = (absY > 90 && absY < 270) ? -1 : 1;
-
-            // 실시간으로 큐브를 회전시킵니다.
-            // 기존 currentX, currentY에 이동량(dx, dy)을 더해 자연스럽게 이어지도록 합니다.
             cube.style.transform = `rotateX(${currentY - dy * 0.5}deg) rotateY(${currentX + (dx * 0.5 * direction)}deg)`;
         }, { passive: true });
 
         window.addEventListener('touchend', (e) => {
             if (!isDraggingCube) return;
-
-            // 터치가 끝나는 시점에 최종 각도를 currentX, currentY에 저장합니다.
-            // e.changedTouches를 사용하여 마지막 위치를 가져옵니다.
             const dx = e.changedTouches[0].clientX - startX;
             const dy = e.changedTouches[0].clientY - startY;
-
             const absY = Math.abs(currentY) % 360;
             const direction = (absY > 90 && absY < 270) ? -1 : 1;
-
+            
+            // 최종 각도 누적 저장 (모바일 튀는 현상 방지)
             currentX += dx * 0.5 * direction;
             currentY -= dy * 0.5;
-
+            
             isDraggingCube = false;
             cube.classList.remove('dragging');
         });
