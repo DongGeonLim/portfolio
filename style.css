@@ -1,0 +1,148 @@
+:root {
+            --bg-dark: #121212; 
+            --btn-gray: #2a2a2a; 
+            --cube-size: 128px; 
+            --half-size: 64px;
+            --indicator-dot: rgba(255, 255, 255, 0.2);
+            --indicator-active: rgba(255, 255, 255, 0.9);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden; 
+            background-color: var(--bg-dark);
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .container {
+            display: flex;
+            width: 100vw; height: 100vh;
+            overflow-x: hidden; 
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory; 
+            /* scroll-behavior: smooth; -> JS에서 동적으로 제어하기 위해 기본값은 제거 권장 */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            cursor: grab;
+            user-select: none;
+        }
+        .container:active { cursor: grabbing; }
+        .container::-webkit-scrollbar { display: none; }
+
+        .page {
+            width: 100vw; height: 100vh;
+            flex-shrink: 0; 
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .page-indicator {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: grid;
+            grid-template-columns: repeat(4, 12px);
+            grid-template-rows: repeat(3, 12px);
+            gap: 8px;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .page-indicator.active { opacity: 1; }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--indicator-dot);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .dot.top    { grid-column: 2; grid-row: 1; opacity: 0.1; } 
+        .dot.page0  { grid-column: 1; grid-row: 2; } 
+        .dot.page1  { grid-column: 2; grid-row: 2; } 
+        .dot.page2  { grid-column: 3; grid-row: 2; } 
+        .dot.extra  { grid-column: 4; grid-row: 2; opacity: 0.1; } 
+        .dot.bottom { grid-column: 2; grid-row: 3; opacity: 0.1; } 
+
+        .dot.active {
+            background-color: var(--indicator-active);
+            box-shadow: 0 0 8px var(--indicator-active);
+        }
+
+        .hero { 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 70px; 
+            color: white; 
+            margin-top: -10px;
+        }
+        .title-area h1 { font-size: 2.5rem; margin: 0; font-weight: 700; }
+        .title-area p { color: #888; margin: 10px 0 25px; font-size: 1rem; }
+
+        .social-group { display: flex; gap: 15px; justify-content: center; z-index: 100; }
+        .social-btn {
+            width: 50px; height: 50px; background-color: var(--btn-gray);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            text-decoration: none; color: white; font-size: 1.4rem; transition: all 0.3s ease;
+        }
+
+        .scene { 
+            width: var(--cube-size); height: var(--cube-size); 
+            perspective: 1200px; cursor: grab; overflow: visible; 
+        }
+
+        .cube {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-15deg) rotateY(-25deg);
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .cube.dragging { transition: none !important; }
+
+        .face {
+            position: absolute; width: var(--cube-size); height: var(--cube-size);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: bold; color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            backface-visibility: visible;
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .face span {
+            font-size: 2rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .cube.unfolded .face span {
+            opacity: 1;
+        }
+
+        .front  { background: #000080; transform: rotateY(0deg) translateZ(var(--half-size)); }
+        .back   { background: #4A8FD7; transform: rotateY(180deg) translateZ(var(--half-size)); }
+        .right  { background: #9D4EDD; transform: rotateY(90deg) translateZ(var(--half-size)); }
+        .left   { background: #7B1B7E; transform: rotateY(-90deg) translateZ(var(--half-size)); }
+        .top    { background: #F5A347; transform: rotateX(90deg) translateZ(var(--half-size)); }
+        .bottom { background: #8BAD2B; transform: rotateX(-90deg) translateZ(var(--half-size)); }
+
+        .cube.unfolded .front  { transform: rotateY(0deg) translateZ(0); }
+        .cube.unfolded .left   { transform: rotateY(0deg) translateX(calc(var(--cube-size) * -1)); }
+        .cube.unfolded .right  { transform: rotateY(0deg) translateX(var(--cube-size)); }
+        .cube.unfolded .back   { transform: rotateY(0deg) translateX(calc(var(--cube-size) * 2)); }
+        .cube.unfolded .top    { transform: rotateX(0deg) translateY(calc(var(--cube-size) * -1)); }
+        .cube.unfolded .bottom { transform: rotateX(0deg) translateY(var(--cube-size)); }
+
+        h2 { font-size: 2rem; color: white; margin-bottom: 10px; }
+        p { color: #888; }
