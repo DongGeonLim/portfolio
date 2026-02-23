@@ -25,6 +25,7 @@ const updateIndicator = () => {
 
 // 새로고침 시 즉시 이동 보정
 window.addEventListener('load', () => {
+    container.style.touchAction = 'none'; // 모바일 터치 액션 차단
     // scrollTo를 사용하여 애니메이션 없이 즉시 좌표 지정
     container.scrollTo({ left: window.innerWidth, behavior: 'auto' });
     updateIndicator();
@@ -94,7 +95,6 @@ scene.addEventListener('click', () => {
         // 핵심: 가로/세로 모든 방향의 스크롤을 완전히 차단
         container.style.overflowX = 'hidden';
         container.style.overflowY = 'hidden'; 
-        container.style.touchAction = 'none'; // 모바일 터치 액션 차단
         
         isUnfolded = false;
         setTimeout(() => {
