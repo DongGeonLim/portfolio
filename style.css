@@ -18,10 +18,10 @@
         .container {
             display: flex;
             width: 100vw; height: 100vh;
-            overflow-x: hidden; 
+            /* overflow-x: hidden; 을 아래와 같이 변경 */
+            overflow-x: auto; 
             overflow-y: hidden;
             scroll-snap-type: x mandatory; 
-            /* scroll-behavior: smooth; -> JS에서 동적으로 제어하기 위해 기본값은 제거 권장 */
             -ms-overflow-style: none;
             scrollbar-width: none;
             cursor: grab;
@@ -70,7 +70,7 @@
         .dot.page0  { grid-column: 1; grid-row: 2; } 
         .dot.page1  { grid-column: 2; grid-row: 2; } 
         .dot.page2  { grid-column: 3; grid-row: 2; } 
-        .dot.extra  { grid-column: 4; grid-row: 2; opacity: 0.1; } 
+        .dot.extra  { grid-column: 4; grid-row: 2; } 
         .dot.bottom { grid-column: 2; grid-row: 3; opacity: 0.1; } 
 
         .dot.active {

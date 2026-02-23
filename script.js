@@ -2,7 +2,12 @@ const cube = document.getElementById('interactiveCube');
 const scene = document.getElementById('cubeScene');
 const container = document.getElementById('mainContainer');
 const indicator = document.getElementById('indicator');
-const dots = [document.querySelector('.page0'), document.querySelector('.page1'), document.querySelector('.page2')];
+const dots = [
+    document.querySelector('.page0'), 
+    document.querySelector('.page1'), 
+    document.querySelector('.page2'),
+    document.querySelector('.extra') // HTML에 있는 extra 점을 4번째 페이지용으로 활용
+];
 
 let isUnfolded = false;
 let isDraggingCube = false;
