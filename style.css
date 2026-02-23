@@ -42,6 +42,28 @@ body, html {
     position: relative;
 }
 
+/* [MODIFIED] 세로 스크롤 컨테이너 설정 */
+.v-container {
+    overflow-y: hidden; /* 큐브 펼치기 전엔 잠금 */
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    display: block !important; /* 내부 v-page들이 수직으로 쌓이게 함 */
+}
+.v-container::-webkit-scrollbar { display: none; }
+
+/* [MODIFIED] 세로 전용 페이지 레이아웃 */
+.v-page {
+    width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
 .page-indicator {
     position: fixed;
     bottom: 25px;

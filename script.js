@@ -2,6 +2,8 @@ const cube = document.getElementById('interactiveCube');
 const scene = document.getElementById('cubeScene');
 const container = document.getElementById('mainContainer');
 const indicator = document.getElementById('indicator');
+const vContainer = document.querySelector('.v-container');
+
 const dots = [
     document.querySelector('.page0'), 
     document.querySelector('.page1'), 
@@ -12,34 +14,68 @@ const dots = [
 let isUnfolded = false;
 let isDraggingCube = false;
 let isPageScrolling = false;
+let isVerticalScrolling = false; // 세로 드래그 상태 관리
+let scrollStartY, scrollTopV;   // 세로 시작 좌표 및 위치 저장
 let startX, startY, scrollStartX, scrollLeft;
 let currentX = -25, currentY = -15;
 
-const updateIndicator = () => {
-    const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
-    dots.forEach((dot, idx) => {
-        if(idx === pageIndex) dot.classList.add('active');
-        else dot.classList.remove('active');
-    });
-};
-
 // 새로고침 시 즉시 이동 보정
 window.addEventListener('load', () => {
-    container.style.touchAction = 'none'; // 모바일 터치 액션 차단
-    // scrollTo를 사용하여 애니메이션 없이 즉시 좌표 지정
+    container.style.touchAction = 'none';
+    // 가로 위치: 메인 페이지(100vw)
     container.scrollTo({ left: window.innerWidth, behavior: 'auto' });
+    // 세로 위치: 메인 내부의 중앙 히어로(100vh)
+    vContainer.scrollTo({ top: window.innerHeight, behavior: 'auto' });
+    
     updateIndicator();
-    // 이후 부드러운 스크롤을 위해 behavior 활성화 가능
-    setTimeout(() => { container.style.scrollBehavior = 'smooth'; }, 100);
+    setTimeout(() => { 
+        container.style.scrollBehavior = 'smooth';
+        vContainer.style.scrollBehavior = 'smooth';
+    }, 100);
 });
 
+// [MODIFIED] 인디케이터 업데이트 로직 확장
+const updateIndicator = () => {
+    const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
+    const vScroll = vContainer.scrollTop;
+
+    dots.forEach((dot) => dot.classList.remove('active'));
+
+    // 메인 페이지(index 1)에 있을 때만 세로 위치 체크
+    if (pageIndex === 1) {
+        if (vScroll < window.innerHeight / 2) {
+            document.querySelector('.top').classList.add('active');
+        } else if (vScroll > window.innerHeight * 1.5) {
+            document.querySelector('.bottom').classList.add('active');
+        } else {
+            dots[1].classList.add('active');
+        }
+    } else {
+        dots[pageIndex].classList.add('active');
+    }
+};
+
+// 1. 마우스 클릭 시작
 container.addEventListener('mousedown', (e) => {
     if (!isUnfolded) return; 
+    
+    const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
+
+    // 공통 드래그 준비 (가로)
     isPageScrolling = true;
     container.style.scrollSnapType = 'none'; 
     container.style.scrollBehavior = 'auto';
     scrollStartX = e.pageX - container.offsetLeft;
     scrollLeft = container.scrollLeft;
+
+    // [수정] 메인 페이지일 때만 세로 드래그도 함께 준비
+    if (pageIndex === 1) {
+        isVerticalScrolling = true;
+        vContainer.style.scrollSnapType = 'none';
+        vContainer.style.scrollBehavior = 'auto';
+        scrollStartY = e.pageY - vContainer.offsetTop;
+        scrollTopV = vContainer.scrollTop;
+    }
 });
 
 scene.addEventListener('mousedown', (e) => {
@@ -51,11 +87,21 @@ scene.addEventListener('mousedown', (e) => {
 });
 
 window.addEventListener('mousemove', (e) => {
+    // 세로 드래그 (메인 페이지에서만 작동)
+    if (isVerticalScrolling) {
+        const y = e.pageY - vContainer.offsetTop;
+        const walkY = (y - scrollStartY) * 1.5;
+        vContainer.scrollTop = scrollTopV - walkY;
+    }
+
+    // 가로 드래그 (어느 페이지에서든 작동)
     if (isPageScrolling) {
         const x = e.pageX - container.offsetLeft;
         const walk = (x - scrollStartX) * 1.5;
         container.scrollLeft = scrollLeft - walk;
     }
+
+    // 큐브 회전 (기존 유지)
     if (isDraggingCube) {
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
@@ -66,6 +112,15 @@ window.addEventListener('mousemove', (e) => {
 });
 
 window.addEventListener('mouseup', (e) => {
+    if (isVerticalScrolling) {
+        /* [NEW: Vertical Drag] 세로 드래그 종료 및 스냅 보정 */
+        isVerticalScrolling = false;
+        vContainer.style.scrollSnapType = 'y mandatory';
+        vContainer.style.scrollBehavior = 'smooth';
+        
+        const vPageIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+        vContainer.scrollTop = vPageIndex * window.innerHeight;
+    }
     if (isPageScrolling) {
         isPageScrolling = false;
         container.style.scrollSnapType = 'x mandatory';
@@ -86,40 +141,34 @@ window.addEventListener('mouseup', (e) => {
 });
 
 scene.addEventListener('click', () => {
-
     if (isUnfolded) {
-        // [접을 때]
+        // [접을 때] 가로/세로 모두 잠금
         cube.classList.remove('unfolded');
         indicator.classList.remove('active');
-        
-        // 가로/세로 모든 방향의 스크롤을 완전히 차단
         container.style.overflowX = 'hidden';
-        container.style.overflowY = 'hidden'; 
-        
+        vContainer.style.overflowY = 'hidden'; // 세로 잠금 추가
         isUnfolded = false;
         setTimeout(() => {
             currentX = -25; currentY = -15;
             cube.style.transform = `rotateX(-15deg) rotateY(-25deg)`;
         }, 50); 
     } else {
-        // [펼칠 때]
+        // [펼칠 때] 가로/세로 모두 해제
         currentX = 0; currentY = 0;
         cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
         setTimeout(() => { 
             cube.classList.add('unfolded'); 
             indicator.classList.add('active');
-            
-            // 펼쳐진 후에만 스크롤 기능을 허용
             container.style.overflowX = 'auto';
-            container.style.overflowY = 'auto'; 
-            container.style.touchAction = 'auto'; // 모바일 터치 액션 복구
-            
+            vContainer.style.overflowY = 'auto'; // 세로 해제 추가
+            container.style.touchAction = 'auto';
             isUnfolded = true; 
         }, 100);
     }
 });
 
 container.addEventListener('scroll', updateIndicator);
+vContainer.addEventListener('scroll', updateIndicator);
 
 // 모바일 터치 로직 개선 (연속 회전 가능)
 scene.addEventListener('touchstart', (e) => {
