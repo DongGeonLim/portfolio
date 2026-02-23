@@ -66,39 +66,47 @@ body, html {
 
 .page-indicator {
     position: fixed;
-    bottom: 25px;
+    bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
     display: grid;
     grid-template-columns: repeat(4, 12px);
     grid-template-rows: repeat(3, 12px);
-    gap: 8px;
+    gap: 12px;
     z-index: 1000;
     pointer-events: none;
-    opacity: 0;
+    
+    /* [RECOVERED] 초기에는 보이지 않게 설정 */
+    opacity: 0; 
     transition: opacity 0.5s ease;
 }
 
-.page-indicator.active { opacity: 1; }
+/* [RECOVERED] active 클래스가 붙었을 때만 나타남 */
+.page-indicator.active { 
+    opacity: 1; 
+}
 
 .dot {
     width: 8px;
     height: 8px;
-    background-color: var(--indicator-dot);
+    background-color: var(--indicator-dot); /* 20% 투명도의 흰색 */
     border-radius: 50%;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; /* 위치 이동(top, left 등) 애니메이션 제거 */
+    opacity: 1 !important; /* 개별 점이 날아오거나 사라지지 않도록 고정 */
 }
 
-.dot.top    { grid-column: 2; grid-row: 1; opacity: 0.1; } 
-.dot.page0  { grid-column: 1; grid-row: 2; } 
-.dot.page1  { grid-column: 2; grid-row: 2; } 
-.dot.page2  { grid-column: 3; grid-row: 2; } 
-.dot.extra  { grid-column: 4; grid-row: 2; } 
-.dot.bottom { grid-column: 2; grid-row: 3; opacity: 0.1; } 
+/* 십자 모양 좌표 고정 */
+.dot.top    { grid-column: 2; grid-row: 1; } /* 중앙 위 */
+.dot.page0  { grid-column: 1; grid-row: 2; } /* 왼쪽 끝 */
+.dot.page1  { grid-column: 2; grid-row: 2; } /* 중앙 메인 */
+.dot.page2  { grid-column: 3; grid-row: 2; } /* 오른쪽 1 */
+.dot.extra  { grid-column: 4; grid-row: 2; } /* 오른쪽 2 */
+.dot.bottom { grid-column: 2; grid-row: 3; } /* 중앙 아래 */
 
 .dot.active {
     background-color: var(--indicator-active);
-    box-shadow: 0 0 8px var(--indicator-active);
+    transform: scale(1.4);
+    box-shadow: 0 0 10px var(--indicator-active);
 }
 
 .hero { 

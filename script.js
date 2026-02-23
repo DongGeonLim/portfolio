@@ -34,24 +34,33 @@ window.addEventListener('load', () => {
     }, 100);
 });
 
-// [MODIFIED] 인디케이터 업데이트 로직 확장
+
 const updateIndicator = () => {
     const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
     const vScroll = vContainer.scrollTop;
+    const vHeight = window.innerHeight;
 
-    dots.forEach((dot) => dot.classList.remove('active'));
+    // 1. 모든 점의 활성화 클래스 제거
+    const allDots = document.querySelectorAll('.dot');
+    allDots.forEach(dot => dot.classList.remove('active'));
 
-    // 메인 페이지(index 1)에 있을 때만 세로 위치 체크
+    // 2. 가로 위치에 따른 기본 점 식별
+    const horizontalClasses = ['page0', 'page1', 'page2', 'extra'];
+    
     if (pageIndex === 1) {
-        if (vScroll < window.innerHeight / 2) {
-            document.querySelector('.top').classList.add('active');
-        } else if (vScroll > window.innerHeight * 1.5) {
-            document.querySelector('.bottom').classList.add('active');
+        // [메인 페이지] 내부 세로 위치 체크
+        if (vScroll < vHeight * 0.5) {
+            document.querySelector('.dot.top').classList.add('active');
+        } else if (vScroll > vHeight * 1.5) {
+            document.querySelector('.dot.bottom').classList.add('active');
         } else {
-            dots[1].classList.add('active');
+            document.querySelector('.dot.page1').classList.add('active');
         }
     } else {
-        dots[pageIndex].classList.add('active');
+        // [기타 페이지] 가로 위치에 맞는 점 활성화
+        const targetClass = horizontalClasses[pageIndex];
+        const targetDot = document.querySelector(`.dot.${targetClass}`);
+        if (targetDot) targetDot.classList.add('active');
     }
 };
 
