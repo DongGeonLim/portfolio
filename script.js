@@ -84,23 +84,36 @@ window.addEventListener('mouseup', (e) => {
     }
 });
 
+// scene.addEventListener('click', ... ) 내부 로직 수정
 scene.addEventListener('click', () => {
     if (isUnfolded) {
+        // [접을 때]
         cube.classList.remove('unfolded');
         indicator.classList.remove('active');
+        
+        // 핵심: 가로/세로 모든 방향의 스크롤을 완전히 차단
         container.style.overflowX = 'hidden';
+        container.style.overflowY = 'hidden'; 
+        container.style.touchAction = 'none'; // 모바일 터치 액션 차단
+        
         isUnfolded = false;
         setTimeout(() => {
             currentX = -25; currentY = -15;
             cube.style.transform = `rotateX(-15deg) rotateY(-25deg)`;
         }, 50); 
     } else {
+        // [펼칠 때]
         currentX = 0; currentY = 0;
         cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
         setTimeout(() => { 
             cube.classList.add('unfolded'); 
             indicator.classList.add('active');
+            
+            // 핵심: 펼쳐진 후에만 스크롤 기능을 허용
             container.style.overflowX = 'auto';
+            container.style.overflowY = 'auto'; 
+            container.style.touchAction = 'auto'; // 모바일 터치 액션 복구
+            
             isUnfolded = true; 
         }, 100);
     }
