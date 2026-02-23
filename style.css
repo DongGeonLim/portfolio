@@ -19,9 +19,9 @@ body, html {
     display: flex;
     width: 100vw; height: 100vh;
     /* overflow-x: hidden; 을 아래와 같이 변경 */
-    overflow: hidden !important;
+    overflow: hidden;
     touch-action: none;
-    
+
     scroll-snap-type: x mandatory; 
     -ms-overflow-style: none;
     scrollbar-width: none;
