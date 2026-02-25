@@ -196,12 +196,25 @@ container.addEventListener('mousedown', (e) => handleDragStart(e.pageX, e.pageY)
 window.addEventListener('mousemove', (e) => handleDragMove(e.pageX, e.pageY));
 window.addEventListener('mouseup', finishDrag);
 
-container.addEventListener('touchstart', (e) => handleDragStart(e.touches[0].pageX, e.touches[0].pageY), {passive: false});
-window.addEventListener('touchmove', (e) => {
-    if (dragDirection) e.preventDefault();
-    handleDragMove(e.touches[0].pageX, e.touches[0].pageY);
+container.addEventListener('touchstart', (e) => {
+    // 터치 시작 시 좌표 전달 (기존 로직 유지)
+    handleDragStart(e.touches[0].pageX, e.touches[0].pageY);
 }, {passive: false});
-window.addEventListener('touchend', finishDrag);
+
+window.addEventListener('touchmove', (e) => {
+    // [KEY FIX] 큐브가 펼쳐진 상태라면 즉시 브라우저의 기본 스크롤을 차단합니다.
+    // 이래야 모바일 브라우저가 제어권을 뺏어가지 않습니다.
+    if (isUnfolded) {
+        e.preventDefault(); 
+    }
+    
+    // handleDragMove에 세 번째 인자인 이벤트 객체 'e'를 반드시 넘겨줍니다.
+    handleDragMove(e.touches[0].pageX, e.touches[0].pageY, e);
+}, {passive: false});
+
+window.addEventListener('touchend', () => {
+    finishDrag(); //
+});
 
 // 5. 큐브 클릭 및 회전 (기존 로직 유지)
 scene.addEventListener('mousedown', (e) => {
