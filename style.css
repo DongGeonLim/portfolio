@@ -15,22 +15,27 @@ body, html {
     font-family: 'Pretendard', sans-serif;
 }
 
+/* style.css */
+
+/* 1. 컨테이너: PC 드래그는 유지하되, 모바일의 '제멋대로 스크롤'만 원천 봉쇄합니다 */
 .container {
     display: flex;
     width: 100vw; height: 100vh;
-    /* overflow-x: hidden; 을 아래와 같이 변경 */
-    overflow: hidden;
-    touch-action: none;
-
+    overflow: hidden; /* PC 드래그 좌표 유지를 위해 필수 */
+    
+    /* [핵심 추가] 모바일에서 화면이 작아 드래그가 뚫리는 현상을 막는 쐐기입니다 */
+    touch-action: none !important; 
+    -webkit-overflow-scrolling: touch;
+    
+    /* PC에서의 부드러운 스냅을 위해 유지하되, JS 드래그와 충돌하지 않게 조절됩니다 */
     scroll-snap-type: x mandatory; 
     -ms-overflow-style: none;
     scrollbar-width: none;
     cursor: grab;
     user-select: none;
 }
-.container:active { cursor: grabbing; }
-.container::-webkit-scrollbar { display: none; }
 
+/* 2. 가로 페이지: 기존의 Flex 레이아웃을 100% 보존합니다 */
 .page {
     width: 100vw; height: 100vh;
     flex-shrink: 0; 
@@ -40,7 +45,24 @@ body, html {
     justify-content: center;
     align-items: center;
     position: relative;
+    /* [추가] 모바일에서 미세하게 삐져나가는 콘텐츠를 잘라내어 드래그 락을 방지합니다 */
+    overflow: hidden; 
 }
+
+/* 3. 세로 페이지: 기존 구조를 유지하며 모바일 좌표 튐 현상을 막습니다 */
+.v-page {
+    width: 100vw; height: 100vh;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* [추가] 가로와 마찬가지로 내부 크기 고정 */
+    overflow: hidden; 
+}
+.container:active { cursor: grabbing; }
+.container::-webkit-scrollbar { display: none; }
 
 /* [MODIFIED] 세로 스크롤 컨테이너 설정 */
 .v-container {
@@ -51,18 +73,6 @@ body, html {
     display: block !important; /* 내부 v-page들이 수직으로 쌓이게 함 */
 }
 .v-container::-webkit-scrollbar { display: none; }
-
-/* [MODIFIED] 세로 전용 페이지 레이아웃 */
-.v-page {
-    width: 100vw;
-    height: 100vh;
-    scroll-snap-align: start;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-}
 
 .page-indicator {
     position: fixed;

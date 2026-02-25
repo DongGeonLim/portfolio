@@ -142,22 +142,7 @@ window.addEventListener('mousemove', (e) => {
 });
 
 window.addEventListener('mouseup', (e) => {
-    if (isVerticalScrolling) {
-        /* [NEW: Vertical Drag] 세로 드래그 종료 및 스냅 보정 */
-        isVerticalScrolling = false;
-        vContainer.style.scrollSnapType = 'y mandatory';
-        vContainer.style.scrollBehavior = 'smooth';
-        
-        const vPageIndex = Math.round(vContainer.scrollTop / window.innerHeight);
-        vContainer.scrollTop = vPageIndex * window.innerHeight;
-    }
-    if (isPageScrolling) {
-        isPageScrolling = false;
-        container.style.scrollSnapType = 'x mandatory';
-        container.style.scrollBehavior = 'smooth';
-        const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
-        container.scrollLeft = pageIndex * window.innerWidth;
-    }
+    // 1. 큐브 회전 종료 로직: 이건 좌표 계산이 필요해서 따로 뺍니다.
     if (isDraggingCube) {
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
@@ -167,6 +152,11 @@ window.addEventListener('mouseup', (e) => {
         currentY -= dy * 0.5;
         isDraggingCube = false;
         cube.classList.remove('dragging');
+    }
+
+    // 2. 페이지 드래그 종료 로직: 공통 함수로 호출합니다.
+    if (isVerticalScrolling || isPageScrolling) {
+        finishDrag(); 
     }
 });
 
@@ -226,16 +216,102 @@ window.addEventListener('touchmove', (e) => {
 }, { passive: true });
 
 window.addEventListener('touchend', (e) => {
-    if (!isDraggingCube) return;
-    const dx = e.changedTouches[0].clientX - startX;
-    const dy = e.changedTouches[0].clientY - startY;
-    const absY = Math.abs(currentY) % 360;
-    const direction = (absY > 90 && absY < 270) ? -1 : 1;
-    
-    // 최종 각도 누적 저장 (모바일 튀는 현상 방지)
-    currentX += dx * 0.5 * direction;
-    currentY -= dy * 0.5;
-    
-    isDraggingCube = false;
-    cube.classList.remove('dragging');
+    // 1. 큐브 회전 종료 로직 (기존 로직 유지)
+    if (isDraggingCube) {
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        const absY = Math.abs(currentY) % 360;
+        const direction = (absY > 90 && absY < 270) ? -1 : 1;
+        
+        currentX += dx * 0.5 * direction;
+        currentY -= dy * 0.5;
+        
+        isDraggingCube = false;
+        cube.classList.remove('dragging');
+    }
+
+    // 2. 페이지 드래그 종료 로직 (공통 함수 호출)
+    // 모바일에서 손을 뗐을 때 페이지가 중간에 걸리지 않게 확실히 고정합니다.
+    if (isVerticalScrolling || isPageScrolling) {
+        finishDrag(); // [CALL]
+    }
 });
+
+/* script.js - 기존 변수 하단에 추가 */
+
+// [MODIFIED] 드래그 시작 통합 함수
+const handleDragStart = (clientX, clientY) => {
+    if (isTransitioning || !isUnfolded) return;
+    
+    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
+    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+
+    // 가로 드래그: 오직 세로 중앙(1)일 때만 허용
+    if (vIndex === 1) {
+        isPageScrolling = true;
+        scrollStartX = clientX;
+        scrollLeft = container.scrollLeft;
+        container.style.scrollBehavior = 'auto';
+    }
+
+    // 세로 드래그: 오직 가로 중앙(1)일 때만 허용
+    if (hIndex === 1) {
+        isVerticalScrolling = true;
+        scrollStartY = clientY;
+        scrollTopV = vContainer.scrollTop;
+        vContainer.style.scrollBehavior = 'auto';
+    }
+};
+
+// [MODIFIED] 드래그 이동 통합 함수
+const handleDragMove = (clientX, clientY) => {
+    if (isVerticalScrolling) {
+        const walkY = (clientY - scrollStartY) * 1.2;
+        vContainer.scrollTop = scrollTopV - walkY;
+    }
+    if (isPageScrolling) {
+        const walkX = (clientX - scrollStartX) * 1.2;
+        container.scrollLeft = scrollLeft - walkX;
+    }
+};
+
+// --- 모바일 터치 이벤트 추가 (가장 중요) ---
+// { passive: false }를 통해 브라우저의 기본 스크롤을 완전히 죽입니다.
+container.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    handleDragStart(touch.pageX, touch.pageY);
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+    if (!isPageScrolling && !isVerticalScrolling) return;
+    e.preventDefault(); // [CORE] 모바일에서 화면이 같이 움직이는 것 방지
+    const touch = e.touches[0];
+    handleDragMove(touch.pageX, touch.pageY);
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+    if (isVerticalScrolling || isPageScrolling) {
+        // 기존 mouseup 로직의 스냅 기능을 함수로 만들어 재사용 권장
+        finishDrag(); 
+    }
+});
+
+function finishDrag() {
+    isPageScrolling = false;
+    isVerticalScrolling = false;
+    
+    // 드래그 중 꺼두었던 부드러운 스크롤 다시 켜기
+    container.style.scrollBehavior = 'smooth';
+    vContainer.style.scrollBehavior = 'smooth';
+    container.style.scrollSnapType = 'x mandatory';
+    vContainer.style.scrollSnapType = 'y mandatory';
+
+    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
+    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+
+    // [중요] 계산된 인덱스로 강제 이동시켜 '상하좌우 잠금' 조건을 확정짓습니다.
+    container.scrollTo({ left: hIndex * window.innerWidth });
+    vContainer.scrollTo({ top: vIndex * window.innerHeight });
+    
+    updateIndicator();
+}
