@@ -4,173 +4,239 @@ const container = document.getElementById('mainContainer');
 const indicator = document.getElementById('indicator');
 const vContainer = document.querySelector('.v-container');
 
-const dots = [
-    document.querySelector('.page0'), 
-    document.querySelector('.page1'), 
-    document.querySelector('.page2'),
-    document.querySelector('.extra') // HTML에 있는 extra 점을 4번째 페이지용으로 활용
-];
-
+// [FIX] 필수 상태 변수들 선언
 let isUnfolded = false;
 let isDraggingCube = false;
 let isPageScrolling = false;
+let isVerticalScrolling = false;
 let isTransitioning = false;
-let isVerticalScrolling = false; // 세로 드래그 상태 관리
-let scrollStartY, scrollTopV;   // 세로 시작 좌표 및 위치 저장
-let startX, startY, scrollStartX, scrollLeft;
+let dragDirection = null; // [IMPORTANT] 축 고정용 변수
+
+let scrollStartX, scrollStartY, scrollLeft, scrollTopV;
+let startX, startY;
 let currentX = -25, currentY = -15;
 
-// 새로고침 시 즉시 이동 보정
+// 1. 초기화 로직
 window.addEventListener('load', () => {
     container.style.touchAction = 'none';
-    // 가로 위치: 메인 페이지(100vw)
+    // 초기 위치 강제 고정 (애니메이션 없이)
     container.scrollTo({ left: window.innerWidth, behavior: 'auto' });
-    // 세로 위치: 메인 내부의 중앙 히어로(100vh)
     vContainer.scrollTo({ top: window.innerHeight, behavior: 'auto' });
     
     updateIndicator();
-    setTimeout(() => { 
-        container.style.scrollBehavior = 'smooth';
-        vContainer.style.scrollBehavior = 'smooth';
-    }, 100);
+    
+    // 첫 로딩 후 드래그 모션을 위해 behavior는 auto로 유지 (finishDrag에서 제어)
+    container.style.scrollBehavior = 'auto';
+    vContainer.style.scrollBehavior = 'auto';
 });
 
-
-/* [MODIFIED] 인디케이터 업데이트 및 자동 펼침 로직 */
+// 2. 인디케이터 및 자동 펼침
 const updateIndicator = () => {
-    const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
-    const vScroll = vContainer.scrollTop;
-    const vHeight = window.innerHeight;
-
-    // 1. [데드락 방지] 페이지 이동이 감지되면 트랜지션 잠금을 강제 해제합니다.
+    const hCurrent = container.scrollLeft;
+    const vCurrent = vContainer.scrollTop;
+    const pageIndex = Math.round(hCurrent / window.innerWidth);
+    
     isTransitioning = false;
 
-    // 2. [자동 펼침] 메인 페이지(index 1)가 아니면 큐브를 강제로 펼침 상태로 유지합니다.
+    // 메인이 아니면 강제 펼침
     if (pageIndex !== 1 && !isUnfolded) {
         isUnfolded = true;
         cube.classList.add('unfolded');
         indicator.classList.add('active');
-        
-        // 스크롤 및 터치 기능 활성화
         container.style.overflowX = 'auto';
         vContainer.style.overflowY = 'auto';
-        container.style.touchAction = 'auto';
-        
-        // 큐브 각도 초기화
         currentX = 0; currentY = 0;
         cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
     }
 
-    // --- 인디케이터 불빛 로직 (기존 유지) ---
     const allDots = document.querySelectorAll('.dot');
     allDots.forEach(dot => dot.classList.remove('active'));
 
     if (pageIndex === 1) {
-        if (vScroll < vHeight * 0.5) {
-            document.querySelector('.dot.top').classList.add('active');
-        } else if (vScroll > vHeight * 1.5) {
-            document.querySelector('.dot.bottom').classList.add('active');
-        } else {
-            document.querySelector('.dot.page1').classList.add('active');
-        }
+        if (vCurrent < window.innerHeight * 0.5) document.querySelector('.dot.top').classList.add('active');
+        else if (vCurrent > window.innerHeight * 1.5) document.querySelector('.dot.bottom').classList.add('active');
+        else document.querySelector('.dot.page1').classList.add('active');
     } else {
-        const horizontalClasses = ['page0', 'page1', 'page2', 'extra'];
-        const targetClass = horizontalClasses[pageIndex];
-        const targetDot = document.querySelector(`.dot.${targetClass}`);
-        if (targetDot) targetDot.classList.add('active');
+        const classes = ['page0', 'page1', 'page2', 'extra'];
+        const dot = document.querySelector(`.dot.${classes[pageIndex]}`);
+        if (dot) dot.classList.add('active');
     }
 };
 
-// 1. 마우스 클릭 시작 (드래그 준비)
-container.addEventListener('mousedown', (e) => {
+// 3. 통합 드래그 로직 (PC/모바일 공용)
+// [FIXED] 드래그 시작 시 스위치를 켜서 이동을 허용합니다.
+const handleDragStart = (clientX, clientY) => {
     if (isTransitioning || !isUnfolded) return;
     
-    // 현재 가로/세로 위치를 정수로 딱 떨어뜨려 확인
-    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
-    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+    // 1. 드래그 상태 초기화
+    dragDirection = null;
+    isPageScrolling = true;     // 가로 이동 가능 상태로 설정
+    isVerticalScrolling = true;   // 세로 이동 가능 상태로 설정
+    
+    scrollStartX = clientX;
+    scrollStartY = clientY;
+    scrollLeft = container.scrollLeft;
+    scrollTopV = vContainer.scrollTop;
 
-    // [핵심] 가로 드래그 허용 조건: 오직 '메인 세로 중앙(vIndex 1)'일 때만
-    if (vIndex === 1) {
-        isPageScrolling = true;
-        container.style.scrollSnapType = 'none'; 
-        container.style.scrollBehavior = 'auto';
-        scrollStartX = e.pageX - container.offsetLeft;
-        scrollLeft = container.scrollLeft;
+    // 2. 부드러운 스크롤 잠시 끄기 (드래그 반응성 향상)
+    container.style.scrollBehavior = 'auto';
+    vContainer.style.scrollBehavior = 'auto';
+    container.style.scrollSnapType = 'none';
+    vContainer.style.scrollSnapType = 'none';
+};
+
+const handleDragMove = (clientX, clientY, e) => {
+    if (isTransitioning || !isUnfolded || isDraggingCube) return;
+
+    // 마우스 버튼 체크 (끈끈이 방지)
+    if (e && e.type === 'mousemove' && e.buttons !== 1) {
+        if (isPageScrolling || isVerticalScrolling) finishDrag();
+        return;
     }
 
-    // [핵심] 세로 드래그 허용 조건: 오직 '메인 가로 중앙(hIndex 1)'일 때만
-    if (hIndex === 1) {
-        isVerticalScrolling = true;
-        vContainer.style.scrollSnapType = 'none';
-        vContainer.style.scrollBehavior = 'auto';
-        scrollStartY = e.pageY - vContainer.offsetTop;
-        scrollTopV = vContainer.scrollTop;
-    }
-});
+    const dx = clientX - scrollStartX;
+    const dy = clientY - scrollStartY;
 
+    // 1. 방향 판정 및 경로 차단 게이트
+    if (!dragDirection) {
+        const threshold = 15;
+        
+        // 현재 내가 가로/세로 어디에 위치해 있는지 인덱스 확인
+        const hIndex = Math.round(container.scrollLeft / window.innerWidth);
+        const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+
+        // [경로 차단 1] 가로 이동 시도: 세로가 '정확히 중앙(1)'일 때만 허용
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+            if (vIndex === 1) { 
+                dragDirection = 'horizontal';
+            } else {
+                return; // 중앙이 아니면 가로 드래그 무시
+            }
+        } 
+        // [경로 차단 2] 세로 이동 시도: 가로가 '정확히 중앙(1)'일 때만 허용
+        else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > threshold) {
+            if (hIndex === 1) {
+                dragDirection = 'vertical';
+            } else {
+                return; // 중앙이 아니면 세로 드래그 무시
+            }
+        }
+        return;
+    }
+
+    // 2. 결정된 축에 따라서만 이동 실행
+    if (dragDirection === 'horizontal' && isPageScrolling) {
+        container.scrollLeft = scrollLeft - dx * 1.5;
+    } else if (dragDirection === 'vertical' && isVerticalScrolling) {
+        vContainer.scrollTop = scrollTopV - dy * 1.5;
+    }
+};
+
+// --- 이벤트 리스너 연결 부분 수정 ---
+window.addEventListener('mousemove', (e) => handleDragMove(e.pageX, e.pageY, e));
+
+/* [ROOT CAUSE FIXED] 애니메이션 끊김 및 순간이동 방지 로직 */
+
+function finishDrag() {
+    // 1. 상태 변수 즉시 백업 및 초기화
+    const activeDir = dragDirection;
+    dragDirection = null;
+    isPageScrolling = false;
+    isVerticalScrolling = false;
+
+    // 2. 임계치 및 목적지 계산 (기존 감도 유지)
+    const hThreshold = 0.2;
+    const vThreshold = 0.08; 
+    
+    const hCurrent = container.scrollLeft / window.innerWidth;
+    const vCurrent = vContainer.scrollTop / window.innerHeight;
+
+    const hTarget = (hCurrent % 1 > hThreshold) ? Math.ceil(hCurrent) : Math.floor(hCurrent);
+    const vTarget = (vCurrent % 1 > vThreshold) ? Math.ceil(vCurrent) : Math.floor(vCurrent);
+
+    // 3. [CORE] 레이아웃(overflow)을 건드리지 않고 브라우저 애니메이션만 활성화
+    // scroll-behavior: smooth를 CSS가 아닌 JS 파라미터로만 제어하여 충돌을 막습니다.
+    container.style.scrollBehavior = 'auto'; 
+    vContainer.style.scrollBehavior = 'auto';
+
+    // 브라우저가 이전 드래그의 'auto' 상태를 완전히 소화한 뒤 smooth를 시작하게 합니다.
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            // [반듯한 느낌의 비결] 이동 중인 축은 부드럽게(smooth), 반대 축은 미세하게 보정
+            if (activeDir === 'horizontal') {
+                // 가로는 부드럽게 목표로, 세로는 즉시 중앙(1)으로 정렬하여 대각선 튐 방지
+                container.scrollTo({ left: hTarget * window.innerWidth, behavior: 'smooth' });
+                vContainer.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); 
+            } 
+            else if (activeDir === 'vertical') {
+                // 세로는 부드럽게 목표로, 가로는 즉시 중앙(1)으로 정렬
+                vContainer.scrollTo({ top: vTarget * window.innerHeight, behavior: 'smooth' });
+                container.scrollTo({ left: window.innerWidth, behavior: 'smooth' });
+            }
+            else {
+                // 드래그 방향이 확정되지 않았던 경우 (미세 클릭 등)
+                container.scrollTo({ left: Math.round(hCurrent) * window.innerWidth, behavior: 'smooth' });
+                vContainer.scrollTo({ top: Math.round(vCurrent) * window.innerHeight, behavior: 'smooth' });
+            }
+            updateIndicator();
+        });
+    });
+
+    // 4. 애니메이션이 끝난 후 스냅 재활성화 (충분한 시간 부여)
+    setTimeout(() => {
+        if (!dragDirection) { // 다시 드래그를 시작하지 않았을 때만
+            container.style.scrollSnapType = 'x mandatory';
+            vContainer.style.scrollSnapType = 'y mandatory';
+        }
+    }, 800); 
+}
+
+// 4. 이벤트 리스너 연결 (PC/모바일 통합)
+container.addEventListener('mousedown', (e) => handleDragStart(e.pageX, e.pageY));
+window.addEventListener('mousemove', (e) => handleDragMove(e.pageX, e.pageY));
+window.addEventListener('mouseup', finishDrag);
+
+container.addEventListener('touchstart', (e) => handleDragStart(e.touches[0].pageX, e.touches[0].pageY), {passive: false});
+window.addEventListener('touchmove', (e) => {
+    if (dragDirection) e.preventDefault();
+    handleDragMove(e.touches[0].pageX, e.touches[0].pageY);
+}, {passive: false});
+window.addEventListener('touchend', finishDrag);
+
+// 5. 큐브 클릭 및 회전 (기존 로직 유지)
 scene.addEventListener('mousedown', (e) => {
     if (isUnfolded || !e.target.classList.contains('face')) return;
     isDraggingCube = true;
-    startX = e.clientX;
-    startY = e.clientY;
+    startX = e.clientX; startY = e.clientY;
     cube.classList.add('dragging');
 });
 
 window.addEventListener('mousemove', (e) => {
-    // 세로 드래그 (메인 페이지에서만 작동)
-    if (isVerticalScrolling) {
-        const y = e.pageY - vContainer.offsetTop;
-        const walkY = (y - scrollStartY) * 1.5;
-        vContainer.scrollTop = scrollTopV - walkY;
-    }
-
-    // 가로 드래그 (어느 페이지에서든 작동)
-    if (isPageScrolling) {
-        const x = e.pageX - container.offsetLeft;
-        const walk = (x - scrollStartX) * 1.5;
-        container.scrollLeft = scrollLeft - walk;
-    }
-
-    // 큐브 회전 (기존 유지)
-    if (isDraggingCube) {
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        const absY = Math.abs(currentY) % 360;
-        const direction = (absY > 90 && absY < 270) ? -1 : 1;
-        cube.style.transform = `rotateX(${currentY - dy * 0.5}deg) rotateY(${currentX + (dx * 0.5 * direction)}deg)`;
-    }
+    if (!isDraggingCube) return;
+    const dx = e.clientX - startX; const dy = e.clientY - startY;
+    const absY = Math.abs(currentY) % 360;
+    const direction = (absY > 90 && absY < 270) ? -1 : 1;
+    cube.style.transform = `rotateX(${currentY - dy * 0.5}deg) rotateY(${currentX + (dx * 0.5 * direction)}deg)`;
 });
 
 window.addEventListener('mouseup', (e) => {
-    // 1. 큐브 회전 종료 로직: 이건 좌표 계산이 필요해서 따로 뺍니다.
-    if (isDraggingCube) {
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        const absY = Math.abs(currentY) % 360;
-        const direction = (absY > 90 && absY < 270) ? -1 : 1;
-        currentX += dx * 0.5 * direction;
-        currentY -= dy * 0.5;
-        isDraggingCube = false;
-        cube.classList.remove('dragging');
-    }
-
-    // 2. 페이지 드래그 종료 로직: 공통 함수로 호출합니다.
-    if (isVerticalScrolling || isPageScrolling) {
-        finishDrag(); 
-    }
+    if (!isDraggingCube) return;
+    const dx = e.clientX - startX; const dy = e.clientY - startY;
+    const absY = Math.abs(currentY) % 360;
+    const direction = (absY > 90 && absY < 270) ? -1 : 1;
+    currentX += dx * 0.5 * direction; currentY -= dy * 0.5;
+    isDraggingCube = false; cube.classList.remove('dragging');
 });
 
 scene.addEventListener('click', (e) => {
     if (isTransitioning) return;
     e.stopPropagation();
-
     if (isUnfolded) {
         isTransitioning = true;
-        // [접을 때] 가로/세로 모두 잠금
         cube.classList.remove('unfolded');
         indicator.classList.remove('active');
         container.style.overflowX = 'hidden';
-        vContainer.style.overflowY = 'hidden'; // 세로 잠금 추가
+        vContainer.style.overflowY = 'hidden';
         isUnfolded = false;
         setTimeout(() => {
             currentX = -25; currentY = -15;
@@ -179,157 +245,15 @@ scene.addEventListener('click', (e) => {
         }, 100); 
     } else {
         isTransitioning = true;
-        // [펼칠 때] 가로/세로 모두 해제
         currentX = 0; currentY = 0;
         cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
         setTimeout(() => { 
             cube.classList.add('unfolded'); 
             indicator.classList.add('active');
             container.style.overflowX = 'auto';
-            vContainer.style.overflowY = 'auto'; // 세로 해제 추가
-            container.style.touchAction = 'auto';
+            vContainer.style.overflowY = 'auto';
             isUnfolded = true; 
             isTransitioning = false;
         }, 200);
     }
 });
-
-container.addEventListener('scroll', updateIndicator);
-vContainer.addEventListener('scroll', updateIndicator);
-
-// 모바일 터치 로직 개선 (연속 회전 가능)
-scene.addEventListener('touchstart', (e) => {
-    if (isTransitioning || isUnfolded || !e.target.classList.contains('face')) return;
-    isDraggingCube = true;
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    cube.classList.add('dragging');
-}, { passive: true });
-
-window.addEventListener('touchmove', (e) => {
-    if (!isDraggingCube) return;
-    const dx = e.touches[0].clientX - startX;
-    const dy = e.touches[0].clientY - startY;
-    const absY = Math.abs(currentY) % 360;
-    const direction = (absY > 90 && absY < 270) ? -1 : 1;
-    cube.style.transform = `rotateX(${currentY - dy * 0.5}deg) rotateY(${currentX + (dx * 0.5 * direction)}deg)`;
-}, { passive: true });
-
-window.addEventListener('touchend', (e) => {
-    // 1. 큐브 회전 종료 로직 (기존 로직 유지)
-    if (isDraggingCube) {
-        const dx = e.changedTouches[0].clientX - startX;
-        const dy = e.changedTouches[0].clientY - startY;
-        const absY = Math.abs(currentY) % 360;
-        const direction = (absY > 90 && absY < 270) ? -1 : 1;
-        
-        currentX += dx * 0.5 * direction;
-        currentY -= dy * 0.5;
-        
-        isDraggingCube = false;
-        cube.classList.remove('dragging');
-    }
-
-    // 2. 페이지 드래그 종료 로직 (공통 함수 호출)
-    // 모바일에서 손을 뗐을 때 페이지가 중간에 걸리지 않게 확실히 고정합니다.
-    if (isVerticalScrolling || isPageScrolling) {
-        finishDrag(); // [CALL]
-    }
-});
-
-/* script.js - 기존 변수 하단에 추가 */
-
-// [MODIFIED] 드래그 시작 통합 함수
-const handleDragStart = (clientX, clientY) => {
-    if (isTransitioning || !isUnfolded) return;
-    
-    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
-    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
-
-    // 가로 드래그: 오직 세로 중앙(1)일 때만 허용
-    if (vIndex === 1) {
-        isPageScrolling = true;
-        scrollStartX = clientX;
-        scrollLeft = container.scrollLeft;
-        container.style.scrollBehavior = 'auto';
-    }
-
-    // 세로 드래그: 오직 가로 중앙(1)일 때만 허용
-    if (hIndex === 1) {
-        isVerticalScrolling = true;
-        scrollStartY = clientY;
-        scrollTopV = vContainer.scrollTop;
-        vContainer.style.scrollBehavior = 'auto';
-    }
-};
-
-// [MODIFIED] 드래그 이동 통합 함수
-const handleDragMove = (clientX, clientY) => {
-    if (isVerticalScrolling) {
-        // 배율을 1.2에서 1.5~1.8 정도로 높이면 더 적게 움직여도 화면이 휙휙 따라옵니다.
-        const walkY = (clientY - scrollStartY) * 1.6; 
-        vContainer.scrollTop = scrollTopV - walkY;
-    }
-    if (isPageScrolling) {
-        const walkX = (clientX - scrollStartX) * 1.6;
-        container.scrollLeft = scrollLeft - walkX;
-    }
-};
-
-// --- 모바일 터치 이벤트 추가 (가장 중요) ---
-// { passive: false }를 통해 브라우저의 기본 스크롤을 완전히 죽입니다.
-container.addEventListener('touchstart', (e) => {
-    const touch = e.touches[0];
-    handleDragStart(touch.pageX, touch.pageY);
-}, { passive: false });
-
-window.addEventListener('touchmove', (e) => {
-    if (!isPageScrolling && !isVerticalScrolling) return;
-    e.preventDefault(); // [CORE] 모바일에서 화면이 같이 움직이는 것 방지
-    const touch = e.touches[0];
-    handleDragMove(touch.pageX, touch.pageY);
-}, { passive: false });
-
-window.addEventListener('touchend', () => {
-    if (isVerticalScrolling || isPageScrolling) {
-        // 기존 mouseup 로직의 스냅 기능을 함수로 만들어 재사용 권장
-        finishDrag(); 
-    }
-});
-
-function finishDrag() {
-    isPageScrolling = false;
-    isVerticalScrolling = false;
-    
-    // 즉시 스냅 대신 부드러운 스크롤 옵션을 활성화합니다.
-    container.style.scrollBehavior = 'smooth';
-    vContainer.style.scrollBehavior = 'smooth';
-
-    // 민감도 조정 로직: 50%가 아니라 20%만 넘겨도 페이지가 넘어가도록 판정 기준을 낮춥니다.
-    const threshold = 0.2; // 20% 임계값
-    
-    const hCurrent = container.scrollLeft / window.innerWidth;
-    const vCurrent = vContainer.scrollTop / window.innerHeight;
-
-    // 현재 인덱스 대비 얼마나 움직였는지 계산하여 다음 페이지 판정
-    const hIndex = (hCurrent % 1 > threshold) ? Math.ceil(hCurrent) : Math.floor(hCurrent);
-    const vIndex = (vCurrent % 1 > threshold) ? Math.ceil(vCurrent) : Math.floor(vCurrent);
-
-    // [핵심] scrollTo 대신 smooth 옵션을 명시하여 애니메이션을 보여줍니다.
-    container.scrollTo({ 
-        left: hIndex * window.innerWidth, 
-        behavior: 'smooth' 
-    });
-    vContainer.scrollTo({ 
-        top: vIndex * window.innerHeight, 
-        behavior: 'smooth' 
-    });
-    
-    updateIndicator();
-
-    // 애니메이션이 끝난 후 다시 behavior를 auto로 돌려 드래그 시 끊김을 방지합니다.
-    setTimeout(() => {
-        container.style.scrollBehavior = 'auto';
-        vContainer.style.scrollBehavior = 'auto';
-    }, 500); 
-}
