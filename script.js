@@ -36,20 +36,36 @@ window.addEventListener('load', () => {
 });
 
 
+/* [MODIFIED] 인디케이터 업데이트 및 자동 펼침 로직 */
 const updateIndicator = () => {
     const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
     const vScroll = vContainer.scrollTop;
     const vHeight = window.innerHeight;
 
-    // 1. 모든 점의 활성화 클래스 제거
+    // 1. [데드락 방지] 페이지 이동이 감지되면 트랜지션 잠금을 강제 해제합니다.
+    isTransitioning = false;
+
+    // 2. [자동 펼침] 메인 페이지(index 1)가 아니면 큐브를 강제로 펼침 상태로 유지합니다.
+    if (pageIndex !== 1 && !isUnfolded) {
+        isUnfolded = true;
+        cube.classList.add('unfolded');
+        indicator.classList.add('active');
+        
+        // 스크롤 및 터치 기능 활성화
+        container.style.overflowX = 'auto';
+        vContainer.style.overflowY = 'auto';
+        container.style.touchAction = 'auto';
+        
+        // 큐브 각도 초기화
+        currentX = 0; currentY = 0;
+        cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
+    }
+
+    // --- 인디케이터 불빛 로직 (기존 유지) ---
     const allDots = document.querySelectorAll('.dot');
     allDots.forEach(dot => dot.classList.remove('active'));
 
-    // 2. 가로 위치에 따른 기본 점 식별
-    const horizontalClasses = ['page0', 'page1', 'page2', 'extra'];
-    
     if (pageIndex === 1) {
-        // [메인 페이지] 내부 세로 위치 체크
         if (vScroll < vHeight * 0.5) {
             document.querySelector('.dot.top').classList.add('active');
         } else if (vScroll > vHeight * 1.5) {
@@ -58,7 +74,7 @@ const updateIndicator = () => {
             document.querySelector('.dot.page1').classList.add('active');
         }
     } else {
-        // [기타 페이지] 가로 위치에 맞는 점 활성화
+        const horizontalClasses = ['page0', 'page1', 'page2', 'extra'];
         const targetClass = horizontalClasses[pageIndex];
         const targetDot = document.querySelector(`.dot.${targetClass}`);
         if (targetDot) targetDot.classList.add('active');
