@@ -266,11 +266,12 @@ const handleDragStart = (clientX, clientY) => {
 // [MODIFIED] 드래그 이동 통합 함수
 const handleDragMove = (clientX, clientY) => {
     if (isVerticalScrolling) {
-        const walkY = (clientY - scrollStartY) * 1.2;
+        // 배율을 1.2에서 1.5~1.8 정도로 높이면 더 적게 움직여도 화면이 휙휙 따라옵니다.
+        const walkY = (clientY - scrollStartY) * 1.6; 
         vContainer.scrollTop = scrollTopV - walkY;
     }
     if (isPageScrolling) {
-        const walkX = (clientX - scrollStartX) * 1.2;
+        const walkX = (clientX - scrollStartX) * 1.6;
         container.scrollLeft = scrollLeft - walkX;
     }
 };
@@ -300,18 +301,35 @@ function finishDrag() {
     isPageScrolling = false;
     isVerticalScrolling = false;
     
-    // 드래그 중 꺼두었던 부드러운 스크롤 다시 켜기
+    // 즉시 스냅 대신 부드러운 스크롤 옵션을 활성화합니다.
     container.style.scrollBehavior = 'smooth';
     vContainer.style.scrollBehavior = 'smooth';
-    container.style.scrollSnapType = 'x mandatory';
-    vContainer.style.scrollSnapType = 'y mandatory';
 
-    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
-    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+    // 민감도 조정 로직: 50%가 아니라 20%만 넘겨도 페이지가 넘어가도록 판정 기준을 낮춥니다.
+    const threshold = 0.2; // 20% 임계값
+    
+    const hCurrent = container.scrollLeft / window.innerWidth;
+    const vCurrent = vContainer.scrollTop / window.innerHeight;
 
-    // [중요] 계산된 인덱스로 강제 이동시켜 '상하좌우 잠금' 조건을 확정짓습니다.
-    container.scrollTo({ left: hIndex * window.innerWidth });
-    vContainer.scrollTo({ top: vIndex * window.innerHeight });
+    // 현재 인덱스 대비 얼마나 움직였는지 계산하여 다음 페이지 판정
+    const hIndex = (hCurrent % 1 > threshold) ? Math.ceil(hCurrent) : Math.floor(hCurrent);
+    const vIndex = (vCurrent % 1 > threshold) ? Math.ceil(vCurrent) : Math.floor(vCurrent);
+
+    // [핵심] scrollTo 대신 smooth 옵션을 명시하여 애니메이션을 보여줍니다.
+    container.scrollTo({ 
+        left: hIndex * window.innerWidth, 
+        behavior: 'smooth' 
+    });
+    vContainer.scrollTo({ 
+        top: vIndex * window.innerHeight, 
+        behavior: 'smooth' 
+    });
     
     updateIndicator();
+
+    // 애니메이션이 끝난 후 다시 behavior를 auto로 돌려 드래그 시 끊김을 방지합니다.
+    setTimeout(() => {
+        container.style.scrollBehavior = 'auto';
+        vContainer.style.scrollBehavior = 'auto';
+    }, 500); 
 }
