@@ -14,6 +14,7 @@ const dots = [
 let isUnfolded = false;
 let isDraggingCube = false;
 let isPageScrolling = false;
+let isTransitioning = false;
 let isVerticalScrolling = false; // 세로 드래그 상태 관리
 let scrollStartY, scrollTopV;   // 세로 시작 좌표 및 위치 저장
 let startX, startY, scrollStartX, scrollLeft;
@@ -64,21 +65,25 @@ const updateIndicator = () => {
     }
 };
 
-// 1. 마우스 클릭 시작
+// 1. 마우스 클릭 시작 (드래그 준비)
 container.addEventListener('mousedown', (e) => {
-    if (!isUnfolded) return; 
+    if (isTransitioning || !isUnfolded) return;
     
-    const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
+    // 현재 가로/세로 위치를 정수로 딱 떨어뜨려 확인
+    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
+    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
 
-    // 공통 드래그 준비 (가로)
-    isPageScrolling = true;
-    container.style.scrollSnapType = 'none'; 
-    container.style.scrollBehavior = 'auto';
-    scrollStartX = e.pageX - container.offsetLeft;
-    scrollLeft = container.scrollLeft;
+    // [핵심] 가로 드래그 허용 조건: 오직 '메인 세로 중앙(vIndex 1)'일 때만
+    if (vIndex === 1) {
+        isPageScrolling = true;
+        container.style.scrollSnapType = 'none'; 
+        container.style.scrollBehavior = 'auto';
+        scrollStartX = e.pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
+    }
 
-    // [수정] 메인 페이지일 때만 세로 드래그도 함께 준비
-    if (pageIndex === 1) {
+    // [핵심] 세로 드래그 허용 조건: 오직 '메인 가로 중앙(hIndex 1)'일 때만
+    if (hIndex === 1) {
         isVerticalScrolling = true;
         vContainer.style.scrollSnapType = 'none';
         vContainer.style.scrollBehavior = 'auto';
@@ -149,8 +154,12 @@ window.addEventListener('mouseup', (e) => {
     }
 });
 
-scene.addEventListener('click', () => {
+scene.addEventListener('click', (e) => {
+    if (isTransitioning) return;
+    e.stopPropagation();
+
     if (isUnfolded) {
+        isTransitioning = true;
         // [접을 때] 가로/세로 모두 잠금
         cube.classList.remove('unfolded');
         indicator.classList.remove('active');
@@ -160,8 +169,10 @@ scene.addEventListener('click', () => {
         setTimeout(() => {
             currentX = -25; currentY = -15;
             cube.style.transform = `rotateX(-15deg) rotateY(-25deg)`;
-        }, 50); 
+            isTransitioning = false;
+        }, 100); 
     } else {
+        isTransitioning = true;
         // [펼칠 때] 가로/세로 모두 해제
         currentX = 0; currentY = 0;
         cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
@@ -172,7 +183,8 @@ scene.addEventListener('click', () => {
             vContainer.style.overflowY = 'auto'; // 세로 해제 추가
             container.style.touchAction = 'auto';
             isUnfolded = true; 
-        }, 100);
+            isTransitioning = false;
+        }, 200);
     }
 });
 
@@ -181,7 +193,7 @@ vContainer.addEventListener('scroll', updateIndicator);
 
 // 모바일 터치 로직 개선 (연속 회전 가능)
 scene.addEventListener('touchstart', (e) => {
-    if (isUnfolded || !e.target.classList.contains('face')) return;
+    if (isTransitioning || isUnfolded || !e.target.classList.contains('face')) return;
     isDraggingCube = true;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
