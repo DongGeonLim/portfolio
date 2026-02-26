@@ -191,56 +191,88 @@ function finishDrag() {
     }, 800); 
 }
 
-// 4. 이벤트 리스너 연결 (PC/모바일 통합)
-container.addEventListener('mousedown', (e) => handleDragStart(e.pageX, e.pageY));
-window.addEventListener('mousemove', (e) => handleDragMove(e.pageX, e.pageY));
-window.addEventListener('mouseup', finishDrag);
+// [4 & 5 통합] 모든 입력(마우스/터치) 및 동작(회전/이동) 관리
 
+// A. 시작점 통합 (마우스 & 터치)
+const startAction = (clientX, clientY, target) => {
+    if (isTransitioning) return;
+
+    if (isUnfolded) {
+        // 펼쳐진 상태: 페이지 드래그 준비
+        handleDragStart(clientX, clientY);
+    } else if (target.classList.contains('face')) {
+        // 접힌 상태 + 큐브 클릭: 회전 준비
+        isDraggingCube = true;
+        startX = clientX;
+        startY = clientY;
+        cube.classList.add('dragging');
+    }
+};
+
+// B. 이동 중 통합 (마우스 & 터치)
+const moveAction = (clientX, clientY, e) => {
+    if (isTransitioning) return;
+
+    if (isUnfolded) {
+        // 펼쳐진 상태: 페이지 이동 (작가님이 만족하신 그 로직)
+        handleDragMove(clientX, clientY, e);
+    } else if (isDraggingCube) {
+        // 접힌 상태: 큐브 회전 로직 (PC/모바일 공통)
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        const absY = Math.abs(currentY) % 360;
+        const direction = (absY > 90 && absY < 270) ? -1 : 1;
+        
+        cube.style.transform = `rotateX(${currentY - dy * 0.5}deg) rotateY(${currentX + (dx * 0.5 * direction)}deg)`;
+    }
+};
+
+// C. 종료 통합 (마우스 & 터치)
+const endAction = (clientX, clientY) => {
+    if (isDraggingCube) {
+        // 회전 종료: 각도 저장
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        const absY = Math.abs(currentY) % 360;
+        const direction = (absY > 90 && absY < 270) ? -1 : 1;
+        
+        currentX += dx * 0.5 * direction;
+        currentY -= dy * 0.5;
+        isDraggingCube = false;
+        cube.classList.remove('dragging');
+    }
+    
+    if (isPageScrolling || isVerticalScrolling) {
+        // 이동 종료: 자석 효과 실행
+        finishDrag();
+    }
+};
+
+// --- 실제 브라우저 이벤트 연결 ---
+
+// 1. 마우스 이벤트 (PC)
+container.addEventListener('mousedown', (e) => startAction(e.pageX, e.pageY, e.target));
+window.addEventListener('mousemove', (e) => moveAction(e.pageX, e.pageY, e));
+window.addEventListener('mouseup', (e) => endAction(e.pageX, e.pageY));
+
+// 2. 터치 이벤트 (모바일)
 container.addEventListener('touchstart', (e) => {
-    // 터치 시작 시 좌표 전달 (기존 로직 유지)
-    handleDragStart(e.touches[0].pageX, e.touches[0].pageY);
+    const t = e.touches[0];
+    startAction(t.pageX, t.pageY, e.target);
 }, {passive: false});
 
 window.addEventListener('touchmove', (e) => {
-    // [KEY FIX] 큐브가 펼쳐진 상태라면 즉시 브라우저의 기본 스크롤을 차단합니다.
-    // 이래야 모바일 브라우저가 제어권을 뺏어가지 않습니다.
-    if (isUnfolded) {
-        e.preventDefault(); 
-    }
-    
-    // handleDragMove에 세 번째 인자인 이벤트 객체 'e'를 반드시 넘겨줍니다.
-    handleDragMove(e.touches[0].pageX, e.touches[0].pageY, e);
+    if (isUnfolded || isDraggingCube) e.preventDefault(); // 스크롤 방해 금지
+    const t = e.touches[0];
+    moveAction(t.pageX, t.pageY, e);
 }, {passive: false});
 
-window.addEventListener('touchend', () => {
-    finishDrag(); //
+window.addEventListener('touchend', (e) => {
+    const t = e.changedTouches[0];
+    endAction(t.pageX, t.pageY);
 });
 
-// 5. 큐브 클릭 및 회전 (기존 로직 유지)
-scene.addEventListener('mousedown', (e) => {
-    if (isUnfolded || !e.target.classList.contains('face')) return;
-    isDraggingCube = true;
-    startX = e.clientX; startY = e.clientY;
-    cube.classList.add('dragging');
-});
-
-window.addEventListener('mousemove', (e) => {
-    if (!isDraggingCube) return;
-    const dx = e.clientX - startX; const dy = e.clientY - startY;
-    const absY = Math.abs(currentY) % 360;
-    const direction = (absY > 90 && absY < 270) ? -1 : 1;
-    cube.style.transform = `rotateX(${currentY - dy * 0.5}deg) rotateY(${currentX + (dx * 0.5 * direction)}deg)`;
-});
-
-window.addEventListener('mouseup', (e) => {
-    if (!isDraggingCube) return;
-    const dx = e.clientX - startX; const dy = e.clientY - startY;
-    const absY = Math.abs(currentY) % 360;
-    const direction = (absY > 90 && absY < 270) ? -1 : 1;
-    currentX += dx * 0.5 * direction; currentY -= dy * 0.5;
-    isDraggingCube = false; cube.classList.remove('dragging');
-});
-
+// 3. 큐브 클릭(펼치기/접기) - 작가님 기존 로직 유지
 scene.addEventListener('click', (e) => {
     if (isTransitioning) return;
     e.stopPropagation();
@@ -248,8 +280,8 @@ scene.addEventListener('click', (e) => {
         isTransitioning = true;
         cube.classList.remove('unfolded');
         indicator.classList.remove('active');
-        container.style.overflowX = 'hidden';
-        vContainer.style.overflowY = 'hidden';
+        container.style.overflow = 'hidden';
+        vContainer.style.overflow = 'hidden';
         isUnfolded = false;
         setTimeout(() => {
             currentX = -25; currentY = -15;
@@ -263,8 +295,8 @@ scene.addEventListener('click', (e) => {
         setTimeout(() => { 
             cube.classList.add('unfolded'); 
             indicator.classList.add('active');
-            container.style.overflowX = 'auto';
-            vContainer.style.overflowY = 'auto';
+            container.style.overflow = 'auto';
+            vContainer.style.overflow = 'auto';
             isUnfolded = true; 
             isTransitioning = false;
         }, 200);
