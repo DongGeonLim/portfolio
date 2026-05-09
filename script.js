@@ -7,13 +7,13 @@ const container = document.getElementById('mainContainer');
 const indicator = document.getElementById('indicator');
 const vContainer = document.querySelector('.v-container');
 
-// [FIX] 필수 상태 변수들 선언
+// 필수 상태 변수들 선언
 let isUnfolded = false;
 let isDraggingCube = false;
 let isPageScrolling = false;
 let isVerticalScrolling = false;
 let isTransitioning = false;
-let dragDirection = null; // [IMPORTANT] 축 고정용 변수
+let dragDirection = null; // 축 고정용 변수
 
 let snapTimeout = null;
 
@@ -21,7 +21,7 @@ let scrollStartX, scrollStartY, scrollLeft, scrollTopV;
 let startX, startY;
 let currentX = -25, currentY = -15;
 
-// 1. 초기화 로직
+// 초기화 로직
 window.addEventListener('load', () => {
     container.style.touchAction = 'none';
     // 초기 위치 강제 고정 (애니메이션 없이)
@@ -35,13 +35,13 @@ window.addEventListener('load', () => {
     vContainer.style.scrollBehavior = 'auto';
 });
 
-// 2. 인디케이터 및 자동 펼침
+// 인디케이터 및 자동 펼침
 const updateIndicator = (manualH, manualV) => {
     // 수동 입력이 없으면 현재 스크롤 위치를 기반으로 계산
     const hCurrent = manualH !== undefined ? manualH : container.scrollLeft / window.innerWidth;
     const vCurrent = manualV !== undefined ? manualV : vContainer.scrollTop / window.innerHeight;
 
-    // [CORE] 자석 효과와 동일한 '의도 파악' 함수
+    // 자석 효과와 동일한 의도 파악 함수
     const getIntentIndex = (val, threshold) => {
         const base = Math.round(val);
         const diff = val - base;
@@ -68,7 +68,7 @@ const updateIndicator = (manualH, manualV) => {
     const allDots = document.querySelectorAll('.dot');
     allDots.forEach(dot => dot.classList.remove('active'));
 
-    // [개선된 판정] hIndex와 vIndex를 기준으로 도트 활성화
+    // hIndex와 vIndex를 기준으로 도트 활성화
     if (hIndex === 1) {
         if (vIndex === 0) document.querySelector('.dot.top').classList.add('active');
         else if (vIndex === 2) document.querySelector('.dot.bottom').classList.add('active');
@@ -80,15 +80,12 @@ const updateIndicator = (manualH, manualV) => {
     }
 };
 
-// 3. 통합 드래그 로직 (PC/모바일 공용)
-// [FIXED] 드래그 시작 시 스위치를 켜서 이동을 허용합니다.
+// 통합 드래그 로직 (PC/모바일 공용)
 const handleDragStart = (clientX, clientY) => {
     if (isTransitioning || !isUnfolded) return;
-    
-    // [KEY FIX 1] 새로운 드래그 시작 시, 이전의 모든 타이머와 애니메이션을 강제 종료!
+
     if (snapTimeout) clearTimeout(snapTimeout);
     
-    // 브라우저의 자석 기능을 완전히 '물리적'으로 끕니다.
     container.style.scrollSnapType = 'none';
     vContainer.style.scrollSnapType = 'none';
     container.style.scrollBehavior = 'auto'; // smooth 애니메이션 즉시 중단
@@ -105,14 +102,12 @@ const handleDragStart = (clientX, clientY) => {
 };
 
 const handleDragMove = (clientX, clientY, e) => {
-    // 1. 드래그 권한 확인 (불필요한 버튼 체크 삭제)
     if (isTransitioning || !isUnfolded || isDraggingCube) return;
     if (!isPageScrolling && !isVerticalScrolling) return;
 
     const dx = clientX - scrollStartX;
     const dy = clientY - scrollStartY;
 
-    // 2. 방향 판정 게이트 (작가님이 만족하신 축 고정 로직 유지)
     if (!dragDirection) {
         const threshold = 5;
         const hIndex = Math.round(container.scrollLeft / window.innerWidth);
@@ -126,7 +121,6 @@ const handleDragMove = (clientX, clientY, e) => {
         return;
     }
 
-    // 3. [1:1 추적] 배율 없이 사용자의 손가락을 정확히 따라갑니다.
     if (dragDirection === 'horizontal') {
         container.scrollLeft = scrollLeft - dx; 
     } else if (dragDirection === 'vertical') {
@@ -134,10 +128,9 @@ const handleDragMove = (clientX, clientY, e) => {
     }
 };
 
-// --- 이벤트 리스너 연결 부분 수정 ---
 window.addEventListener('mousemove', (e) => handleDragMove(e.pageX, e.pageY, e));
 
-/* [ROOT CAUSE FIXED] 애니메이션 끊김 및 순간이동 방지 로직 */
+/* 애니메이션 끊김 및 순간이동 방지 로직 */
 
 function finishDrag() {
     if (!dragDirection) {
@@ -168,14 +161,13 @@ function finishDrag() {
         else if (diff < -V_THRESHOLD) vTarget = Math.max(sV - 1, 0);
     }
 
-    // [KEY FIX 2] scrollTo 실행 전 다시 한번 모든 설정을 auto로 고정
+    // scrollTo 실행 전 다시 한번 모든 설정을 auto로 고정
     container.style.scrollBehavior = 'auto';
     vContainer.style.scrollBehavior = 'auto';
 
     requestAnimationFrame(() => {
         if (activeDir === 'horizontal') {
             vContainer.scrollTop = window.innerHeight;
-            // JS의 behavior: 'smooth' 하나만 믿고 갑니다.
             container.scrollTo({ left: hTarget * window.innerWidth, behavior: 'smooth' });
         } else if (activeDir === 'vertical') {
             container.scrollLeft = window.innerWidth;
@@ -184,7 +176,7 @@ function finishDrag() {
         updateIndicator(hTarget, vTarget);
     });
 
-    // [KEY FIX 3] 타이머를 변수에 저장하여 언제든 취소 가능하게 함
+    // 타이머를 변수에 저장하여 언제든 취소 가능하게 함
     snapTimeout = setTimeout(() => {
         container.style.scrollSnapType = 'x mandatory';
         vContainer.style.scrollSnapType = 'y mandatory';
@@ -192,7 +184,7 @@ function finishDrag() {
     }, 700); // 애니메이션 시간을 고려해 넉넉히 0.7초 부여
 }
 
-// [4 & 5 통합] 모든 입력(마우스/터치) 관리 섹션
+// 모든 입력(마우스/터치) 관리 섹션
 
 const startAction = (clientX, clientY, target) => {
     if (isTransitioning) return;
@@ -230,7 +222,7 @@ const endAction = (clientX, clientY) => {
     }
 };
 
-// --- 이벤트 연결 (중복 제거) ---
+// 이벤트 연결
 container.addEventListener('mousedown', (e) => startAction(e.pageX, e.pageY, e.target));
 window.addEventListener('mousemove', (e) => moveAction(e.pageX, e.pageY, e));
 window.addEventListener('mouseup', (e) => endAction(e.pageX, e.pageY));
@@ -251,7 +243,7 @@ window.addEventListener('touchend', (e) => {
     if (t) endAction(t.pageX, t.pageY);
 });
 
-// 3. 큐브 클릭(펼치기/접기) - 작가님 기존 로직 유지
+// 큐브 클릭(펼치기/접기)
 scene.addEventListener('click', (e) => {
     if (isTransitioning) return;
     e.stopPropagation();
