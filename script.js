@@ -37,15 +37,12 @@ window.addEventListener('load', () => {
 
 // 인디케이터 및 자동 펼침
 const updateIndicator = (manualH, manualV) => {
-    // 수동 입력이 없으면 현재 스크롤 위치를 기반으로 계산
     const hCurrent = manualH !== undefined ? manualH : container.scrollLeft / window.innerWidth;
     const vCurrent = manualV !== undefined ? manualV : vContainer.scrollTop / window.innerHeight;
 
-    // 자석 효과와 동일한 의도 파악 함수
     const getIntentIndex = (val, threshold) => {
         const base = Math.round(val);
         const diff = val - base;
-        // 임계값보다 많이 움직였다면 진행 방향의 인덱스를, 아니면 원래 인덱스 반환
         return (Math.abs(diff) > threshold) ? (diff > 0 ? Math.ceil(val) : Math.floor(val)) : base;
     };
 
@@ -54,13 +51,14 @@ const updateIndicator = (manualH, manualV) => {
     
     isTransitioning = false;
 
-    // 메인 페이지가 아닐 때 큐브 펼침 유지
-    if (hIndex !== 1 && !isUnfolded) {
+    // 센터(1, 1)가 아닌 외부 이력 페이지로 완전히 들어왔다면
+    // 설령 드래그 중에 잠시 접혔거나 상태가 꼬였더라도 무조건 '펼침' 상태로 리셋합니다.
+    if (!(hIndex === 1 && vIndex === 1)) {
         isUnfolded = true;
         cube.classList.add('unfolded');
         indicator.classList.add('active');
-        container.style.overflowX = 'auto';
-        vContainer.style.overflowY = 'auto';
+        container.style.overflow = 'auto';
+        vContainer.style.overflow = 'auto';
         currentX = 0; currentY = 0;
         cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
     }
@@ -68,11 +66,10 @@ const updateIndicator = (manualH, manualV) => {
     const allDots = document.querySelectorAll('.dot');
     allDots.forEach(dot => dot.classList.remove('active'));
 
-    // hIndex와 vIndex를 기준으로 도트 활성화
     if (hIndex === 1) {
         if (vIndex === 0) document.querySelector('.dot.top').classList.add('active');
         else if (vIndex === 2) document.querySelector('.dot.bottom').classList.add('active');
-        else document.querySelector('.dot.page1').classList.add('active');
+        else document.querySelector('.dot.page1').classList.add('active'); // 센터
     } else {
         const classes = ['page0', 'page1', 'page2', 'extra'];
         const dot = document.querySelector(`.dot.${classes[hIndex]}`);
@@ -227,6 +224,18 @@ container.addEventListener('mousedown', (e) => startAction(e.pageX, e.pageY, e.t
 window.addEventListener('mousemove', (e) => moveAction(e.pageX, e.pageY, e));
 window.addEventListener('mouseup', (e) => endAction(e.pageX, e.pageY));
 
+// 마우스가 브라우저 화면 밖으로 이탈하면 안전하게 드래그 상태를 해제합니다.
+window.addEventListener('mouseleave', (e) => {
+    if (isPageScrolling || isVerticalScrolling || isDraggingCube) {
+        endAction(e.pageX, e.pageY);
+    }
+});
+
+// 우리 커스텀 드래그 로직을 방해하지 못하도록 원천 차단합니다.
+container.addEventListener('dragstart', (e) => {
+    e.preventDefault();
+});
+
 container.addEventListener('touchstart', (e) => {
     const t = e.touches[0];
     startAction(t.pageX, t.pageY, e.target);
@@ -273,3 +282,34 @@ scene.addEventListener('click', (e) => {
         }, 200);
     }
 });
+
+// iframe 내부 이벤트를 메인 드래그 로직으로 연결해주는 래퍼 함수들
+window.handleIframeStart = function(e, iframeWin) {
+    if (isTransitioning || !isUnfolded) return;
+    
+    // iframe 내부 좌표를 메인 스크린 좌표 기준으로 보정
+    const rect = iframeWin.frameElement.getBoundingClientRect();
+    const touch = e.touches ? e.touches[0] : e;
+    const pageX = touch.clientX + rect.left;
+    const pageY = touch.clientY + rect.top;
+    
+    startAction(pageX, pageY, iframeWin.frameElement);
+};
+
+window.handleIframeMove = function(e, iframeWin) {
+    if (isTransitioning || !isUnfolded || isDraggingCube) return;
+    if (!isPageScrolling && !isVerticalScrolling) return;
+    
+    const rect = iframeWin.frameElement.getBoundingClientRect();
+    const touch = e.touches ? e.touches[0] : e;
+    const pageX = touch.clientX + rect.left;
+    const pageY = touch.clientY + rect.top;
+    
+    moveAction(pageX, pageY, e);
+};
+
+window.handleIframeEnd = function(e, iframeWin) {
+    // endAction은 좌표가 크게 중요하지 않으므로 그대로 전달
+    const touch = e.changedTouches ? e.changedTouches[0] : (e.touches ? e.touches[0] : e);
+    endAction(touch ? touch.pageX : 0, touch ? touch.pageY : 0);
+};

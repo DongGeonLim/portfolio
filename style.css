@@ -167,6 +167,10 @@ body, html {
     transition: opacity 0.5s ease;
 }
 
+.cube.unfolded {
+    transform: rotateX(0deg) rotateY(0deg) !important;
+}
+
 .cube.unfolded .face span {
     opacity: 1;
 }
@@ -187,3 +191,14 @@ body, html {
 
 h2 { font-size: 2rem; color: white; margin-bottom: 10px; }
 p { color: #888; }
+
+.sub-page-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent; /* 서브 페이지 배경이 비치도록 설정 */
+    
+    /* iframe 내부 스크롤이 메인 컨테이너 터치/드래그 이벤트를 
+       방해하지 않도록 모바일에서 세로 스크롤만 허용 */
+    touch-action: pan-y; 
+}

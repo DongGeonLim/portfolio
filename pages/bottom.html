@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Sub Page</title>
+    <style>
+        body 
+        { 
+            margin: 0; color: white; background: transparent; height: 100vh; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body 
+  onmousedown="parent.handleIframeStart(event, window)"
+  onmousemove="parent.handleIframeMove(event, window)"
+  onmouseup="parent.handleIframeEnd(event, window)"
+  ontouchstart="parent.handleIframeStart(event, window)"
+  ontouchmove="parent.handleIframeMove(event, window)"
+  ontouchend="parent.handleIframeEnd(event, window)">
+
+    <h2>서브 페이지 콘텐츠</h2>
+    <p>여기에 채워질 이력 내용들...</p>
+
+</body>
+</html>

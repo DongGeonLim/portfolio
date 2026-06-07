@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>About Me | 임동건</title>
+    <!-- 폰트 및 아이콘 라이브러리 연동 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 1. 기본 프레임 및 스크롤바 디자인 */
+        body { 
+            margin: 0; 
+            color: #ffffff; 
+            background: transparent; 
+            font-family: 'Pretendard', sans-serif;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow-y: auto; /* 내용이 길어지면 내부 스크롤 허용 */
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* 스크롤바 스타일링 (트렌디하고 슬림하게) */
+        body::-webkit-scrollbar { width: 6px; }
+        body::-webkit-scrollbar-track { background: transparent; }
+        body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+        body::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        .wrapper {
+            padding: 50px 30px 80px 30px; /* 아래쪽은 인디케이터 배려하여 여백 확보 */
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 2. 타이포그래피 */
+        .page-header {
+            margin-bottom: 40px;
+        }
+        .page-header h2 { 
+            font-size: 2.2rem; 
+            margin: 0 0 10px 0; 
+            font-weight: 700;
+            background: linear-gradient(45deg, #4A8FD7, #9D4EDD); /* 메인 큐브 연계 그라데이션 */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .page-header p { color: #888; margin: 0; font-size: 1rem; }
+
+        /* 3. 섹션 레이아웃 (카드형태) */
+        .section-title {
+            font-size: 1.2rem;
+            color: #4A8FD7;
+            margin: 30px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+
+        /* 이력/경력 카드 스타일 */
+        .info-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .info-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-2px);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: #fff; margin: 0; }
+        .card-date { font-size: 0.85rem; color: #666; font-weight: 500; }
+        .card-sub { font-size: 0.9rem; color: #aaa; margin: 0 0 12px 0; }
+        .card-desc { font-size: 0.9rem; color: #888; margin: 0; line-height: 1.6; }
+
+        /* 4. 역량 배지 스타일 */
+        .tech-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .tag {
+            background: rgba(157, 78, 221, 0.15);
+            color: #d4affc;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body 
+  onmousedown="parent.handleIframeStart(event, window)"
+  onmousemove="parent.handleIframeMove(event, window)"
+  onmouseup="parent.handleIframeEnd(event, window)"
+  ontouchstart="parent.handleIframeStart(event, window)"
+  ontouchmove="parent.handleIframeMove(event, window)"
+  ontouchend="parent.handleIframeEnd(event, window)">
+
+    <div class="wrapper">
+        <!-- 페이지 상단 헤더 -->
+        <div class="page-header">
+            <h2>About Me</h2>
+            <p>기획하는 개발자, 몰입을 설계하는 임동건입니다.</p>
+        </div>
+
+        <!-- 학력 및 소속 구역 -->
+        <div class="section-title">
+            <i class="fa-solid fa-graduation-cap"></i> Academic & Lab History
+        </div>
+
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">동국대학교</h3>
+                <span class="card-date">2021. 03 - 재학 중</span>
+            </div>
+            <p class="card-sub">멀티미디어소프트웨어공학 전공 (4학년 senior)</p>
+            <p class="card-desc">소프트웨어 공학 전반의 지식 습득 및 게임 인프라, 그래픽스, 데이터 구조 분석을 바탕으로 한 몰입형 콘텐츠 개발 연구 프로세스 이수.</p>
+        </div>
+
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">인공지능 연구실 (AI Lab)</h3>
+                <span class="card-date">2024. 03 - 2026. 02</span>
+            </div>
+            <p class="card-sub">학부 연구생 (Undergraduate Researcher)</p>
+            <p class="card-desc">인공지능 모델 파이프라인 최적화 및 텍스트/멀티미디어 데이터 다각도 분석 연구 수행. 대형 언어 모델(LLM)을 활용한 에이전트 연동 기초 인프라 설계 기여.</p>
+            <div class="tech-tags">
+                <span class="tag">Python</span>
+                <span class="tag">LLM</span>
+                <span class="tag">Data Analysis</span>
+            </div>
+        </div>
+
+        <!-- 역량 및 핵심 스킬 구역 -->
+        <div class="section-title">
+            <i class="fa-solid fa-code"></i> Tech & Creative Skills
+        </div>
+
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">핵심 개발 역량</h3>
+            </div>
+            <p class="card-desc">Unity 엔진 기반 콘텐츠 최적화, Java/Python 백엔드 아키텍처 설계, LLM(대형 언어 모델) 연동 인터랙티브 NPC 시스템 구현 가능.</p>
+            <div class="tech-tags">
+                <span class="tag">Unity</span>
+                <span class="tag">Java</span>
+                <span class="tag">Python</span>
+                <span class="tag">C#</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
