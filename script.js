@@ -154,8 +154,27 @@ function finishDrag() {
         else if (diff < -H_THRESHOLD) hTarget = Math.max(sH - 1, 0);
     } else if (activeDir === 'vertical') {
         const diff = vCurrent - sV;
-        if (diff > V_THRESHOLD) vTarget = Math.min(sV + 1, 2);
-        else if (diff < -V_THRESHOLD) vTarget = Math.max(sV - 1, 0);
+        
+        // [모바일 top 페이지 탈출 리다이렉션 추가]
+        // 현재 top 페이지(sV === 0)에 정착해 있는 상태이고 사용자가 위로 밀었을 때(diff > 0)
+        if (sV === 0 && diff > 0) {
+            const topIframe = document.querySelector('#top-page iframe');
+            if (topIframe) {
+                const iframeDoc = topIframe.contentDocument || topIframe.contentWindow.document;
+                const scrollTop = iframeDoc.documentElement.scrollTop || iframeDoc.body.scrollTop;
+                const scrollHeight = iframeDoc.documentElement.scrollHeight || iframeDoc.body.scrollHeight;
+                const clientHeight = iframeDoc.documentElement.clientHeight || iframeDoc.body.clientHeight;
+
+                // 스크롤이 완전히 끝에 도달한 상태에서 드래그가 일어났다면 메인(vTarget = 1)으로 보정
+                if (scrollTop + clientHeight >= scrollHeight - 10) {
+                    vTarget = 1; 
+                }
+            }
+        } else {
+            // 기존 상하 스냅 타깃 계산 로직
+            if (diff > V_THRESHOLD) vTarget = Math.min(sV + 1, 2);
+            else if (diff < -V_THRESHOLD) vTarget = Math.max(sV - 1, 0);
+        }
     }
 
     // scrollTo 실행 전 다시 한번 모든 설정을 auto로 고정
@@ -282,6 +301,52 @@ scene.addEventListener('click', (e) => {
         }, 200);
     }
 });
+
+// script.js 맨 아래쪽 이벤트 연결 구역에 추가
+
+// PC 마우스 휠 감지하여 상단 페이지에서 메인으로 복귀시키기
+window.addEventListener('wheel', (e) => {
+    // 큐브가 펼쳐진 상태이고, 현재 스크롤 위치가 top-page(vContainer.scrollTop === 0)일 때만 작동
+    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
+    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+
+    if (isUnfolded && hIndex === 1 && vIndex === 0 && !isTransitioning) {
+        const topIframe = document.querySelector('#top-page iframe');
+        if (!topIframe) return;
+
+        const iframeDoc = topIframe.contentDocument || topIframe.contentWindow.document;
+        const iframeBody = iframeDoc.body;
+        const iframeHtml = iframeDoc.documentElement;
+
+        // iframe 내부의 현재 스크롤 위치와 끝 지점 계산
+        const scrollTop = iframeHtml.scrollTop || iframeBody.scrollTop;
+        const scrollHeight = iframeHtml.scrollHeight || iframeBody.scrollHeight;
+        const clientHeight = iframeHtml.clientHeight || iframeBody.clientHeight;
+
+        // 휠을 아래로 내릴 때 (e.deltaY > 0) + 서브 페이지 스크롤이 맨 바닥에 닿았을 때
+        if (e.deltaY > 0 && (scrollTop + clientHeight >= scrollHeight - 5)) {
+            isTransitioning = true;
+            
+            container.style.scrollBehavior = 'auto';
+            vContainer.style.scrollBehavior = 'auto';
+
+            requestAnimationFrame(() => {
+                container.scrollLeft = window.innerWidth;
+                // 메인 히어로 센터(vTarget = 1)로 부드럽게 복귀
+                vContainer.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+                updateIndicator(1, 1);
+            });
+
+            // 스냅 바인딩 마무리 타임아웃
+            if (snapTimeout) clearTimeout(snapTimeout);
+            snapTimeout = setTimeout(() => {
+                container.style.scrollSnapType = 'x mandatory';
+                vContainer.style.scrollSnapType = 'y mandatory';
+                snapTimeout = null;
+            }, 700);
+        }
+    }
+}, { passive: true });
 
 // iframe 내부 이벤트를 메인 드래그 로직으로 연결해주는 래퍼 함수들
 window.handleIframeStart = function(e, iframeWin) {
