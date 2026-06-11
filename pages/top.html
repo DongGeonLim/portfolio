@@ -95,7 +95,7 @@
         /* 4. 소설 본문 (흐리게 처리하는 블러 효과 + 명조체) */
         .book-passage {
             font-family: 'Noto Serif KR', serif;
-            font-size: 1.01rem;
+            font-size: 1.05rem;
             font-weight: 300;
             line-height: 1.9;
             color: rgba(255, 255, 255, 0.8);
@@ -112,6 +112,40 @@
         .book-container:hover .book-passage {
             filter: blur(0px);
             opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+            .wrapper {
+                padding: 25px 15px 100px 15px; /* 전체적인 상하좌우 외곽 여백을 줄여 공간 확보 */
+            }
+
+            .section-tag {
+                margin-bottom: 20px; /* 상단 꼬리표 여백 축소 */
+                font-size: 0.8rem;
+            }
+
+            .book-container {
+                padding: 25px 20px; /* 💥 스크린샷에서 가장 답답해 보였던 카드 내부 여백을 슬림하게 조정 */
+                margin-bottom: 30px;
+                border-radius: 12px;
+            }
+
+            .book-meta {
+                margin-bottom: 25px; /* 타이틀과 본문 사이의 과한 공백 압축 */
+            }
+
+            .book-title {
+                font-size: 1.8rem; /* 💥 모바일 한 화면에 예쁘게 안착하도록 서체 크기 다운사이징 */
+            }
+
+            .book-author {
+                font-size: 0.95rem;
+            }
+
+            .book-passage {
+                font-size: 0.95rem; /* 자칫 뚱뚱해 보일 수 있는 본문 글씨를 밀도 있게 조정 */
+                line-height: 1.8;   /* 행간을 모바일 가독성에 맞춰 소폭 최적화 */
+            }
         }
 
         /* 5. 하단 콘텐츠 기획 및 스토리 제작 역량 어필 영역 */
