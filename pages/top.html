@@ -2,22 +2,152 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Sub Page</title>
+    <title>Literary Works | 서사 창작 아카이브</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body 
-        { 
-            margin: 0; color: white; background: transparent; height: 100vh; 
+        /* 1. 프레임 및 스크롤바 커스텀 (동건님이 맘에 들어 하신 슬림 스크롤바 유지) */
+        body { 
+            margin: 0; 
+            color: #ffffff; 
+            background: transparent; 
+            font-family: 'Pretendard', sans-serif;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow-y: auto; 
+            overflow-x: hidden;
+            
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-
-            overflow-y: auto; 
-            overflow-x: hidden;
         }
-        body::-webkit-scrollbar {
-            display: none;
-        }       
+        
+        body::-webkit-scrollbar { width: 6px; }
+        body::-webkit-scrollbar-track { background: transparent; }
+        body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+        body::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        .wrapper {
+            padding: 50px 25px 90px 25px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 2. 기획자/작가 정체성 어필 태그 */
+        .section-tag {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4A8FD7; /* 메인 탑 페이지 컬러 라인 */
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 3. 감각적인 책 표지/레이아웃 구역 */
+        .book-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 35px;
+            position: relative;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+
+        /* 책의 입체적인 서사 느낌을 주는 왼쪽 세로 띠선 */
+        .book-container::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #4A8FD7, rgba(74, 143, 215, 0.1));
+        }
+
+        /* 우측 상단 타이틀 & 작가 이름 배치 */
+        .book-meta {
+            text-align: right;
+            margin-bottom: 45px;
+        }
+        .book-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            letter-spacing: -1px;
+        }
+        .book-author {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #888;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        /* 4. 소설 본문 (흐리게 처리하는 블러 효과 + 명조체) */
+        .book-passage {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.05rem;
+            font-weight: 300;
+            line-height: 1.9;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: justify; /* 소설 책 특유의 정렬 방식 */
+            word-break: keep-all;
+            
+            /* 💥 간지나게 약간 흐리게 만드는 블러 효과의 핵심 속성들 */
+            filter: blur(0.6px); 
+            opacity: 0.65;
+            transition: filter 0.4s ease, opacity 0.4s ease;
+        }
+
+        /* 사용자가 마우스를 올리거나 집중할 때 선명해지는 명품 디테일 효과 */
+        .book-container:hover .book-passage {
+            filter: blur(0px);
+            opacity: 0.95;
+        }
+
+        /* 5. 하단 콘텐츠 기획 및 스토리 제작 역량 어필 영역 */
+        .capability-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 30px;
+        }
+        .capability-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .capability-desc {
+            font-size: 0.95rem;
+            color: #888;
+            line-height: 1.7;
+            margin: 0 0 20px 0;
+        }
+        .keyword-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .keyword-tag {
+            background: rgba(74, 143, 215, 0.1);
+            border: 1px solid rgba(74, 143, 215, 0.2);
+            color: #92bdf0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body 
@@ -28,8 +158,38 @@
   ontouchmove="parent.handleIframeMove(event, window)"
   ontouchend="parent.handleIframeEnd(event, window)">
 
-    <h2>서브 페이지 콘텐츠</h2>
-    <p>여기에 채워질 이력 내용들...</p>
+    <div class="wrapper">
+        <div class="section-tag">
+            <i class="fa-solid fa-pen-nib"></i> 酌 : 서사적 서사 창작
+        </div>
+
+        <div class="book-container">
+            <div class="book-meta">
+                <h1 class="book-title">여난(女難)</h1>
+                <p class="book-author">임동건</p>
+            </div>
+            
+            <div class="book-passage">
+                그를 다시 만난 곳은 장례식장이라 하자. 나는 이름이 적혀 있지 않은 조의금 봉투가 있다는 사실을 듣고 그와 함께 있음을 알게 되었다. 확인을 위해 무명의 봉투를 덮은 이씨 봉투들을 나열하자 뜻밖에도 그의 이름이 있었다. 반가움이 눈을 굴리며 그의 뒤까지 찾았지만 나는 다가갈 수 없었다. 어떠한 감정이 나를 희석하는 바람에 즐비한 질문은커녕 인사조차 꺼내지 못했다. 숨이 조여지는 그 감정은 여전히 후회에 가까운 듯했다. 이미 죽은 아버지의 마지막 눈빛에 마땅히 들어야 할 감정은 후회였다. 이름도 없이 여러 색에 혼탁해서 나는 길게 타고 흐름을 찾는다.
+            </div>
+        </div>
+
+        <div class="capability-section">
+            <div class="capability-title">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 콘텐츠의 뼈대와 영혼을 설계하다
+            </div>
+            <p class="capability-desc">
+                단순한 기능적 코딩을 넘어, 콘텐츠를 관통하는 <strong>세계관 기획과 텍스트 시나리오(스토리) 원천 소스 창작</strong>이 가능합니다. 독창적인 서사를 직접 조형할 수 있는 감각을 바탕으로, 몰입형 공간의 동선 기획부터 NPC의 페르소나 설계까지 유기적으로 연결된 고밀도 콘텐츠 아키텍처를 구현합니다.
+            </p>
+            
+            <div class="keyword-group">
+                <div class="keyword-tag">스토리 오리지널리티</div>
+                <div class="keyword-tag">세계관 크리에이터</div>
+                <div class="keyword-tag">시나리오 문학적 감각</div>
+                <div class="keyword-tag">이머시브 서사 설계</div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

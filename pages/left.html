@@ -96,6 +96,30 @@
             font-size: 0.8rem;
             font-weight: 500;
         }
+        /* 대형 115+ 방탈출 아카이브 컨테이너 박스 */
+        .escape-archive-card {
+            background: linear-gradient(135deg, rgba(74, 143, 215, 0.05), rgba(157, 78, 221, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px; padding: 22px; margin-top: 20px;
+        }
+        .archive-summary { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .count-badge {
+            background: #9D4EDD; color: #fff; font-size: 0.85rem; font-weight: 700;
+            padding: 4px 12px; border-radius: 30px; box-shadow: 0 0 10px rgba(157, 78, 221, 0.4);
+        }
+        
+        /* 내부에 독립 스크롤을 주어 레이아웃 파괴 방지 */
+        .archive-scroll {
+            max-height: 220px; overflow-y: auto; padding-right: 5px;
+            font-size: 0.85rem; line-height: 1.7; color: #aaa;
+        }
+        .region-block { margin-bottom: 14px; }
+        .region-name { color: #fff; font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+        .region-name i { color: #4A8FD7; font-size: 0.8rem; }
+        .shop-line { padding-left: 12px; margin-bottom: 3px; border-left: 1px solid rgba(255,255,255,0.1); }
+        .shop-name { color: #ccc; font-weight: 500; }
+        .theme-names { color: #777; font-size: 0.8rem; padding-left: 4px; }
+
     </style>
 </head>
 <body 
@@ -158,6 +182,69 @@
                 <span class="tag">C#</span>
             </div>
         </div>
+        <div class="escape-archive-card">
+            <div class="archive-summary">
+                <div class="card-title" style="font-size:1rem;"><i class="fa-solid fa-brain" style="color:#9D4EDD; margin-right:5px;"></i> 이머시브 콘텐츠 분석력</div>
+                <span class="count-badge">OFFLINE ARCHIVE 115+</span>
+            </div>
+            <p class="card-desc" style="font-size:0.85rem; margin-bottom:12px; color:#888;">
+                단순 오프라인 체험을 넘어 수도권 및 주요 지점의 오프라인 공간 제어, 센서 연동 가이드, 스토리 복선 아키텍처를 유저 관점에서 직접 경험하고 데이터베이스화했습니다.
+            </p>
+            
+            <div class="archive-scroll">
+                <div class="region-block">
+                    <div class="region-name"><i class="fa-solid fa-location-dot"></i> 홍대 구역</div>
+                    <div class="shop-line"><span class="shop-name">코드케이</span><span class="theme-names"> - 꼬레아우라</span></div>
+                    <div class="shop-line"><span class="shop-name">디코더</span><span class="theme-names"> - 여자방, 남자방, TEMPO RUBATO</span></div>
+                    <div class="shop-line"><span class="shop-name">싸인이스케이프</span><span class="theme-names"> - 거상</span></div>
+                    <div class="shop-line"><span class="shop-name">키이스케이프</span><span class="theme-names"> - 홀리데이, 삐릿뽀, 고백</span></div>
+                    <div class="shop-line"><span class="shop-name">룸즈에이</span><span class="theme-names"> - RH-X, 키메이커, 뽀득뽀득</span></div>
+                    <div class="shop-line"><span class="shop-name">비트포비아</span><span class="theme-names"> - 전래동 자살사건, 그달동네, And i met E</span></div>
+                    <div class="shop-line"><span class="shop-name">비밀의화원</span><span class="theme-names"> - 리비도</span></div>
+                    <div class="shop-line"><span class="shop-name">퀘스천마크</span><span class="theme-names"> - 퀘스천마크</span></div>
+                    <div class="shop-line"><span class="shop-name">지구별</span><span class="theme-names"> - 미스터리, 퀘스트, 멸종위기종 탐사대, 라스트 코어</span></div>
+                    <div class="shop-line"><span class="shop-name">제로월드</span><span class="theme-names"> - 깜방탈출, 층간소음</span></div>
+                    <div class="shop-line"><span class="shop-name">티켓투이스케이프</span><span class="theme-names"> - 갤럭시 익스프레스, 게임의 법칙</span></div>
+                    <div class="shop-line"><span class="shop-name">기타 단일 매장</span><span class="theme-names"> - 오아시스뮤지엄(업사이드 다운), 배드 타임, 하이맥스, 머더파커(칠칠), 상상의문(서울만 가면 된다), 미스터리룸(쏘우), 룸엘(퇴근길), 토끼굴, 더챕터(쿠키), 플레이아레나, 파노라마(퍼펫 플레이)</span></div>
+                </div>
+
+                <div class="region-block">
+                    <div class="region-name"><i class="fa-solid fa-location-dot"></i> 강남 구역</div>
+                    <div class="shop-line"><span class="shop-name">키이스케이프</span><span class="theme-names"> - 그카지, 엔제리오, 네드, 원더리아, US, back to the scene, wanna go home, FILM BY STEVE, FILM BY BOB, 머니머니패키지, For free, A Gentle Monday, 머니머니부동산, 내 방, NOSTALGIA VISTA, AYAKO</span></div>
+                    <div class="shop-line"><span class="shop-name">서이룸</span><span class="theme-names"> - 유럽횡단 야간열차, 죽음을 부르는 재즈바</span></div>
+                    <div class="shop-line"><span class="shop-name">제로월드</span><span class="theme-names"> - 아이엠, 콜러, DONE</span></div>
+                    <div class="shop-line"><span class="shop-name">비트포비아</span><span class="theme-names"> - 강남목욕탕, 3일</span></div>
+                    <div class="shop-line"><span class="shop-name">단편선</span><span class="theme-names"> - 그림자 없는 상자, 사그행부</span></div>
+                    <div class="shop-line"><span class="shop-name">룸즈에이</span><span class="theme-names"> - 쎄비지, 메가 게임</span></div>
+                    <div class="shop-line"><span class="shop-name">기타 단일 매장</span><span class="theme-names"> - 넥스트에디션(카르텔), 셜록홈즈(타인은 지옥이다), 던전(대호시장 살인사건), 포인트나인(시간이 멈춘 마을), 도어이스케이프(비), 판타스트릭(태초의 신부), 초상화(Hiraeth), 오늘의한페이지(Buddy), 프랭크(브루클린 마이 러브)</span></div>
+                </div>
+
+                <div class="region-block">
+                    <div class="region-name"><i class="fa-solid fa-location-dot"></i> 건대 구역</div>
+                    <div class="shop-line"><span class="shop-name">솔버</span><span class="theme-names"> - 이층 복도 끝 화장실, 루시드 드림, Dear Marsy</span></div>
+                    <div class="shop-line"><span class="shop-name">머더파커</span><span class="theme-names"> - 여행, R003</span></div>
+                    <div class="shop-line"><span class="shop-name">황금열쇠</span><span class="theme-names"> - flaesh, now here</span></div>
+                    <div class="shop-line"><span class="shop-name">포인트나인</span><span class="theme-names"> - ALBA, Jack in the show</span></div>
+                    <div class="shop-line"><span class="shop-name">드림이스케이프</span><span class="theme-names"> - 바야흐로, 여름이었다., ALLTHEBOX PARADISE</span></div>
+                    <div class="shop-line"><span class="shop-name">기타 단일 매장</span><span class="theme-names"> - 엑스케이프(필연의 수감동, 숨바꼭질), 마스터키(이불밖은위험해), 포레스트(새벽 베이커리), 넥스트에디션(세렌디피티)</span></div>
+                </div>
+
+                <div class="region-block">
+                    <div class="region-name"><i class="fa-solid fa-location-dot"></i> 신촌 구역</div>
+                    <div class="shop-line"><span class="shop-name">룸익스케이프</span><span class="theme-names"> - 드림포스트, 플라이미투더문</span></div>
+                    <div class="shop-line"><span class="shop-name">기타 매장</span><span class="theme-names"> - 포인트나인(SILENT), 마스터키(scene 404), 파노라마(판도라), 나의신방(한나는 해고됐어), 클레버타운(좌뇌우뇌연구소)</span></div>
+                </div>
+
+                <div class="region-block">
+                    <div class="region-name"><i class="fa-solid fa-location-dot"></i> 수도권 및 기타 구역</div>
+                    <div class="shop-line"><span class="shop-name">부평 지점</span><span class="theme-names"> - 어메이즈드(이탈리안 잡, REC, 하시마, SHIFT), 넥스트에디션(THISMAN), 둠이스케이프(슬래셔)</span></div>
+                    <div class="shop-line"><span class="shop-name">부산 지점</span><span class="theme-names"> - 마스터키(칼퇴, 세이프티룸, 키키키키키, bang)</span></div>
+                    <div class="shop-line"><span class="shop-name">혜화 지점</span><span class="theme-names"> - 에필로그(monday night), 탐정의방(엘리트 고시원), 덤앤더머(러브클리닉)</span></div>
+                    <div class="shop-line"><span class="shop-name">기타 지역</span><span class="theme-names"> - 마곡 링크월드(곤충커키우기, 웁스리페어), 잠실 셜록홈즈(단잠)/마스터키, 왕십리 더코드(피의 일요일), 성수 레토/단편선, 성남 씨이스케이프</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
 </body>
