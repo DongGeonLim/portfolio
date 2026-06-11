@@ -2,15 +2,142 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Sub Page</title>
+    <title>Puzzle Archive | 기획 아카이브</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body 
-        { 
-            margin: 0; color: white; background: transparent; height: 100vh; 
+        /* 1. 프레임 및 스크롤바 숨김 설정 (기존 사용감 유지) */
+  body { 
+            margin: 0; 
+            color: #ffffff; 
+            background: transparent; 
+            font-family: 'Pretendard', sans-serif;
+            height: 100vh;
+            box-sizing: border-box;
+            
+            /* 💥 [수정] 스크롤바를 완전히 차단하던 none 속성들을 지우고, 
+               내용이 넘칠 때만 세로 스크롤바가 자연스럽게 생성되도록 합니다. */
+            overflow-y: auto; 
+            overflow-x: hidden;
+            
+            /* 텍스트 드래그 방지 (기존 설정 유지) */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+        }
+        
+        /* 💥 [핵심] 크롬, 사파리, 최신 엣지용 슬림 스크롤바 커스텀 디자인 */
+        /* 스크롤바 전체 너비 설정 (기존의 칙칙하고 뚱뚱한 바를 6px로 슬림하게 변경) */
+        body::-webkit-scrollbar { 
+            width: 6px; 
+        }
+        
+        /* 스크롤바가 지나가는 레일(트랙) 배경 - 투명하게 해서 배경을 해치지 않음 */
+        body::-webkit-scrollbar-track { 
+            background: transparent; 
+        }
+        
+        /* 실제 사용자가 잡고 움직이는 스크롤 바(손잡이) 디자인 */
+        body::-webkit-scrollbar-thumb { 
+            background: rgba(255, 255, 255, 0.15); /* 은은한 투명 흰색 */
+            border-radius: 3px; /* 둥글게 깎아서 세련되게 */
+            transition: background 0.3s ease;
+        }
+        
+        /* 스크롤바에 마우스를 올렸을 때 조금 더 선명해지는 효과 */
+        body::-webkit-scrollbar-thumb:hover { 
+            background: rgba(255, 255, 255, 0.3); 
+        }
+
+        .wrapper {
+            padding: 40px 20px 80px 20px;
+            max-width: 500px; 
+            margin: 0 auto;
+        }
+
+        /* 2. 상단 헤더 영역 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        .page-header h2 { 
+            font-size: 1.8rem; 
+            margin: 0 0 8px 0; 
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(45deg, #9D4EDD, #7B1B7E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .page-header p { color: #777; margin: 0; font-size: 0.9rem; }
+
+        /* 3. 핵심: 2 X 7 퍼즐 그리드 레이아웃 */
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 정확히 반반씩 2열 구성 */
+            gap: 15px; /* 사진 사이의 적당한 여백 */
+        }
+
+        /* 열 타이틀 가이드 (선택 사항: 각 열이 무슨 종류인지 명시) */
+        .column-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #aaa;
+            text-align: center;
+            padding: 5px 0;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+        }
+        .column-title.j-type { color: #9D4EDD; border-color: rgba(157, 78, 221, 0.3); }
+        .column-title.w-type { color: #4A8FD7; border-color: rgba(74, 143, 215, 0.3); }
+
+        /* 개별 이미지 카드 프레임 */
+        .puzzle-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        /* 호버 시 은은하게 부각되는 인터랙션 효과 */
+        .puzzle-card:hover {
+            transform: scale(1.03);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 이미지 자체 스타일링 수정 */
+        .puzzle-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            
+            /* 💥 [추정 원인 저격] 이미지 파일 자체의 드래그 앤 드롭 기능 강제 차단 */
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            
+            /* 마우스 오버 효과는 자식(img)이 아닌 부모(.puzzle-card)가 처리하므로
+            이미지가 마우스 이벤트를 가로채지 않고 부모에게 넘기도록 설정 */
+            pointer-events: none; 
+        }
+
+        /* 카드 하단 미니 라벨 (필요 없으면 지우셔도 됩니다) */
+        .puzzle-label {
+            font-size: 0.75rem;
+            color: #555;
+            padding: 6px 0;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -22,8 +149,80 @@
   ontouchmove="parent.handleIframeMove(event, window)"
   ontouchend="parent.handleIframeEnd(event, window)">
 
-    <h2>서브 페이지 콘텐츠</h2>
-    <p>여기에 채워질 이력 내용들...</p>
+    <div class="wrapper">
+        <div class="page-header">
+            <h2>Puzzle Architecture</h2>
+            <p>공간 속에 심어둔 7개의 복선과 7개의 단서</p>
+        </div>
+
+        <div class="puzzle-grid">
+            <div class="column-title j-type">J - Series</div>
+            <div class="column-title w-type">W - Series</div>
+
+            <div class="puzzle-card">
+                <img src="../media/j/j1.PNG" alt="J1">
+                <div class="puzzle-label">J-01</div>
+            </div>
+            <div class="puzzle-card">
+                <img src="../media/w/w1.PNG" alt="W1">
+                <div class="puzzle-label">W-01</div>
+            </div>
+
+            <div class="puzzle-card">
+                <img src="../media/j/j2.PNG" alt="J2">
+                <div class="puzzle-label">J-02</div>
+            </div>
+            <div class="puzzle-card">
+                <img src="../media/w/w2.PNG" alt="W2">
+                <div class="puzzle-label">W-02</div>
+            </div>
+
+            <div class="puzzle-card">
+                <img src="../media/j/j3.PNG" alt="J3">
+                <div class="puzzle-label">J-03</div>
+            </div>
+            <div class="puzzle-card">
+                <img src="../media/w/w3.PNG" alt="W3">
+                <div class="puzzle-label">W-03</div>
+            </div>
+
+            <div class="puzzle-card">
+                <img src="../media/j/j4.PNG" alt="J4">
+                <div class="puzzle-label">J-04</div>
+            </div>
+            <div class="puzzle-card">
+                <img src="../media/w/w4.PNG" alt="W4">
+                <div class="puzzle-label">W-04</div>
+            </div>
+
+            <div class="puzzle-card">
+                <img src="../media/j/j5.PNG" alt="J5">
+                <div class="puzzle-label">J-05</div>
+            </div>
+            <div class="puzzle-card">
+                <img src="../media/w/w5.PNG" alt="W5">
+                <div class="puzzle-label">W-05</div>
+            </div>
+
+            <div class="puzzle-card">
+                <img src="../media/j/j6.PNG" alt="J6">
+                <div class="puzzle-label">J-06</div>
+            </div>
+            <div class="puzzle-card">
+                <img src="../media/w/w6.PNG" alt="W6">
+                <div class="puzzle-label">W-06</div>
+            </div>
+
+            <div class="puzzle-card">
+                <img src="../media/j/j7.PNG" alt="J7">
+                <div class="puzzle-label">J-07</div>
+            </div>
+            <div class="puzzle-card">
+                <img src="../media/w/w7.PNG" alt="W7">
+                <div class="puzzle-label">W-07</div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
