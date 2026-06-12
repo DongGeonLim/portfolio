@@ -11,13 +11,18 @@
         body { 
             margin: 0; color: #ffffff; background: transparent; 
             font-family: 'Pretendard', sans-serif; height: 100vh;
-            box-sizing: border-box; overflow: hidden;
+            box-sizing: border-box; overflow-y: auto; overflow-x: hidden;
             -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
 
+        /* 슬림 반투명 스크롤바 일체화 */
+        body::-webkit-scrollbar { width: 6px; }
+        body::-webkit-scrollbar-track { background: transparent; }
+        body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+        body::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
         .wrapper { 
-            padding: 40px 25px; max-width: 900px; margin: 0 auto;
-            height: 100vh; display: flex; flex-direction: column; justify-content: space-between;
+            padding: 40px 25px 90px 25px; max-width: 900px; margin: 0 auto;
             box-sizing: border-box;
         }
 
@@ -36,7 +41,7 @@
 
         /* 2. 핵심: 3D 극장 무대 */
         .space-theater {
-            position: relative; width: 100%; height: 45vh;
+            position: relative; width: 100%; height: 40vh;
             background: #08080a; 
             border: 1px solid rgba(255, 255, 255, 0.03);
             border-radius: 16px; margin: 20px 0;
@@ -50,20 +55,17 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 캠퍼스 맵 스크린 가시성 밸런스 조정 */
         .campus-map-screen {
             width: 85%; height: 85%;
-            object-fit: contain;
-            border-radius: 6px;
+            object-fit: contain; border-radius: 6px;
             border: 1px solid rgba(255, 255, 255, 0.15); 
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             background: rgba(255, 255, 255, 0.01);
-            opacity: 0.55; 
-            mix-blend-mode: luminosity; 
+            opacity: 0.55; mix-blend-mode: luminosity; 
             -webkit-user-drag: none; user-drag: none; pointer-events: none;
         }
 
-/* 💡 [전면 리뉴얼] 무대용 무빙 라이트 조명 장치 2.5D 조형 */
+        /* 💥 [동건님 커스텀 튜닝 세부값 반영 완비] 무대용 무빙 라이트 조명 장치 2.5D 조형 */
         .lighting-device {
             position: absolute; left: 4%; bottom: 8%;
             width: 36px; height: 42px;
@@ -71,7 +73,7 @@
             z-index: 10;
         }
 
-        /* 1) 하단 사각형 베이스 본체 (콘트롤러 박스) */
+        /* 1) 하단 사각형 베이스 본체 (콘트롤러 박스) - 32px 다운사이징 반영 */
         .light-base {
             position: absolute; bottom: 0; left: 0;
             width: 32px; height: 10px;
@@ -92,78 +94,77 @@
             position: absolute; bottom: 10px; left: 4px;
             width: 26px; height: 18px;
             border: 2px solid #2c2c2e;
-            border-top: none; /* U자 형태 구현 */
+            border-top: none; 
             background: rgba(28, 28, 30, 0.9);
             border-radius: 0 0 8px 8px;
             box-sizing: border-box;
         }
 
-        /* 3) 중앙 계란형 조명 헤드 (실제 렌즈가 박힌 몸통) */
+        /* 3) 중앙 계란형 조명 헤드 (실제 렌즈가 박힌 몸통) - 35deg 동선 정밀 조준 회전각 반영 */
         .light-head {
             position: absolute; top: 2px; left: 7px;
             width: 20px; height: 24px;
             background: radial-gradient(circle at 35% 35%, #3a3a3c, #151517);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px 10px 8px 8px; /* 둥근 계란형 실루엣 */
+            border-radius: 10px 10px 8px 8px; 
             box-shadow: inset -2px -2px 5px rgba(0,0,0,0.8);
             transform: rotate(35deg);
         }
-        
-        /* 헤더 최상단 빔 발사구 최외곽 렌즈 링 */
+        /* 헤더 최상단 빔 발사구 링 */
         .light-head::before {
-            content: ''; position: absolute; top: 0; left: 3px;
+            content: ''; position: absolute; top: 0; left: 4px;
             width: 12px; height: 3px;
             background: #48484a; border-radius: 50%;
-            border-bottom: 1px solid #636366;
         }
-        /* 렌즈 안쪽 발광 코어 이펙트 */
-        .light-head::after {
-            content: ''; position: absolute; top: 1px; left: 5px;
-            width: 8px; height: 2px;
-            background: rgba(157, 78, 221, 0.8); /* 보랏빛 광원 예열 효과 */
-            border-radius: 50%;
-            filter: blur(0.5px);
-        }
-        /* 🎯 원형 스포트라이트 (오직 맑고 선명한 서클 이펙트만 하드캐리) */
+
+        /* 원형 스포트라이트 조명 효과 */
         .spotlight-circle {
-            position: absolute;
-            width: 95px; height: 95px; 
+            position: absolute; width: 95px; height: 95px; 
             background: radial-gradient(circle, rgba(157, 78, 221, 0.8) 0%, rgba(74, 143, 215, 0.45) 45%, rgba(74, 143, 215, 0.1) 65%, transparent 85%);
-            border-radius: 50%;
-            pointer-events: none;
-            mix-blend-mode: screen;
-            z-index: 5;
-            filter: blur(2px);
-            
-            /* 동건님이 커스텀해두신 황금 좌표 무빙 스캔 연동 */
+            border-radius: 50%; pointer-events: none; mix-blend-mode: screen; z-index: 5; filter: blur(2px);
             animation: mapTargetScan 9s infinite ease-in-out;
         }
 
-        /* 지정해두신 완벽한 좌표 루프 유지 */
         @keyframes mapTargetScan {
             0%, 100% { left: 28%; top: 37%; }
             33% { left: 48%; top: 25%; }
             66% { left: 65%; top: 53%; }
         }
 
-        /* 3. 하단 설명 블록 */
+        /* 3. 결과물 영상 플레이어 존 */
+        .video-section {
+            margin: 25px 0; background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 14px;
+            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        .video-container {
+            width: 100%; border-radius: 8px; overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            background: #000; display: flex;
+        }
+        .video-container video { width: 100%; height: auto; display: block; }
+
+        /* 4. 하단 통합 기획/개발 역량 리포트 서식 */
         .research-summary {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px; padding: 20px 22px;
+            border-radius: 12px; padding: 22px;
         }
         .summary-title {
-            font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: #fff;
+            font-size: 1.15rem; font-weight: 600; margin-bottom: 12px; color: #fff;
             display: flex; align-items: center; gap: 8px;
         }
         .summary-title i { color: #4A8FD7; }
-        .summary-desc { font-size: 0.9rem; color: #888; line-height: 1.6; margin: 0; }
         
-        .tech-badges { display: flex; gap: 8px; margin-top: 12px; }
+        .pitching-block { margin-bottom: 18px; }
+        .pitching-block h4 { font-size: 0.95rem; color: #9D4EDD; margin: 0 0 6px 0; font-weight: 600; }
+        .pitching-block p { font-size: 0.9rem; color: #aaa; line-height: 1.6; margin: 0; text-align: justify; }
+
+        .tech-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
         .badge {
-            background: rgba(157, 78, 221, 0.12); color: #d4affc; font-size: 0.8rem;
-            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(157, 78, 221, 0.2);
-            font-weight: 500;
+            background: rgba(74, 143, 215, 0.12); color: #92bdf0; font-size: 0.8rem;
+            padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(74, 143, 215, 0.2); font-weight: 500;
         }
 
         @media (max-width: 768px) {
@@ -172,10 +173,13 @@
             .space-theater { height: 35vh; }
             .campus-map-screen { width: 92%; height: 92%; }
             .spotlight-circle { width: 70px; height: 70px; }
+            .video-section { padding: 12px; }
         }
     </style>
 </head>
-<body  onmousedown="parent.handleIframeStart(event, window)"
+
+<body 
+  onmousedown="parent.handleIframeStart(event, window)"
   onmousemove="parent.handleIframeMove(event, window)"
   onmouseup="parent.handleIframeEnd(event, window)"
   ontouchstart="parent.handleIframeStart(event, window)"
@@ -185,11 +189,11 @@
     <div class="wrapper">
         <div>
             <div class="section-tag">
-                <i class="fa-solid fa-map-location-dot"></i> 작(作) : 실감형 가이드 인터페이스
+                <i class="fa-solid fa-microchip"></i> 하드웨어 및 시스템 통합 아키텍처
             </div>
             <div class="page-header">
-                <h2>Immersive Map Guide System</h2>
-                <p>졸업 연구 프로토타입: 실시간 위치 데이터 기반 공간 조명 동기화</p>
+                <h2>LLM-Driven Interactive Light Guide</h2>
+                <p>종합설계 프로젝트: 실시간 음성 추론 기반 DMX512 조명 제어 가이드 시스템</p>
             </div>
         </div>
 
@@ -203,21 +207,43 @@
                     <div class="light-base"></div>
                 </div>
             </div>
-
             <div class="spotlight-circle"></div>
+        </div>
+
+        <div class="video-section">
+            <div class="summary-title" style="font-size: 1rem; margin-bottom: 12px;">
+                <i class="fa-solid fa-circle-play" style="color: #9D4EDD;"></i> 오프라인 체험 공간 실체화 및 구동 검증
+            </div>
+            <div class="video-container">
+                <video src="../media/result.mov" autoplay loop muted playsinline></video>
+            </div>
         </div>
 
         <div class="research-summary">
             <div class="summary-title">
-                <i class="fa-solid fa-microchip"></i> 실시간 데이터 연동 시각 가이드 인터페이스
+                <i class="fa-solid fa-cubes"></i> 융합형 콘텐츠 디렉팅 및 풀스택 빌드 역량
             </div>
-            <p class="summary-desc">
-                지정된 디지털 캠퍼스 맵 아키텍처 위에 하드웨어 인프라 기술을 시각적으로 결합한 가이드 시스템입니다. 좌측 하단의 디바이스 노즐에서 전송되는 연동 시퀀스를 기반으로, <strong>콤팩트하게 압축된 원형(Circle) 스포트라이트</strong> 빔이 맵 내부의 특정 좌표나 이벤트 거점을 핀포인트로 조준하며 부드럽게 스캔합니다. 유저의 공간 대형 데이터와 기획 동선을 실시간 맵 레이어와 하드웨어 연출로 상호 결합하는 직관적인 실감형 인터랙션을 증명합니다.
-            </p>
+            
+            <div class="pitching-block">
+                <h4>능동형 이머시브 가이드 파이프라인 설계</h4>
+                <p>
+                    기존 오프라인 콘텐츠의 수동적이고 흐름을 깨는 힌트 방식을 전면 개선했습니다. 다채널 마이크로 수음된 체험자의 음성 데이터 전처리(STT)부터, 시나리오 체인 기반의 하이브리드 RAG 아키텍처 및 상태 추론 알고리즘을 유기적으로 연동하여 환각 현상(Hallucination)을 제어하고 최소 지연 시간 내에 완벽하게 문맥을 판별하는 시스템을 구축했습니다.
+                </p>
+            </div>
+
+            <div class="pitching-block">
+                <h4>실물 하드웨어 인프라 실체화 및 DMX512 제어</h4>
+                <p>
+                    SketchUp을 활용한 3D 가벽 설계와 실물 하드웨어 공간 구축을 직접 총괄했습니다. 분석 모듈이 도출한 유저의 긴급도 및 위치 데이터(JSON)를 기반으로, 무대 연출 표준인 DMX512 프로토콜 통신 제어망을 구축하여 실제 무빙 라이트의 방위각과 암전 시퀀스를 매핑하는 실감형 비언어적 가이드 프레임워크를 최종 검증하고 완성했습니다.
+                </p>
+            </div>
+
             <div class="tech-badges">
-                <span class="badge">디지털 맵 레이어 인터페이스</span>
-                <span class="badge">핀포인트 서클 스폿 가이드</span>
-                <span class="badge">공간 데이터 연동 제어</span>
+                <span class="badge">대규모 언어 모델 (LLM)</span>
+                <span class="badge">하이브리드 검색 증강 생성 (RAG)</span>
+                <span class="badge">DMX512 프로토콜 인터페이스</span>
+                <span class="badge">Faster-Whisper 동기화 파이프라인</span>
+                <span class="badge">물리 공간 인프라 설계</span>
             </div>
         </div>
     </div>

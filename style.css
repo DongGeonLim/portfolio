@@ -162,9 +162,21 @@ body, html {
 }
 
 .face span {
-    font-size: 2rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'Pretendard', sans-serif;
+    
+    font-size: 1rem; /* 무의미한 2rem 대왕 글씨 축소 */
     opacity: 0;
-    transition: opacity 0.5s ease;
+    pointer-events: none; /* 접혀있을 때는 마우스 이벤트를 차단 */
+    transition: opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .cube.unfolded {
