@@ -2,34 +2,225 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Sub Page</title>
+    <title>Graduation Research | 실감형 공간 아카이브</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body 
-        { 
-            margin: 0; color: white; background: transparent; height: 100vh; 
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-
-            overflow-y: auto; 
-            overflow-x: hidden;
+        /* 1. 기본 프레임 세팅 */
+        body { 
+            margin: 0; color: #ffffff; background: transparent; 
+            font-family: 'Pretendard', sans-serif; height: 100vh;
+            box-sizing: border-box; overflow: hidden;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
-        body::-webkit-scrollbar {
-            display: none;
-        }    
+
+        .wrapper { 
+            padding: 40px 25px; max-width: 900px; margin: 0 auto;
+            height: 100vh; display: flex; flex-direction: column; justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        /* 헤더 디자인 */
+        .section-tag {
+            font-size: 0.85rem; font-weight: 600; color: #9D4EDD; 
+            letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .page-header h2 { 
+            font-size: 2rem; margin: 0 0 6px 0; font-weight: 700; letter-spacing: -0.5px;
+            background: linear-gradient(45deg, #9D4EDD, #4A8FD7);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .page-header p { color: #777; margin: 0; font-size: 0.95rem; line-height: 1.5; }
+
+        /* 2. 핵심: 3D 극장 무대 */
+        .space-theater {
+            position: relative; width: 100%; height: 45vh;
+            background: #08080a; 
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 16px; margin: 20px 0;
+            perspective: 1000px;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.95);
+        }
+
+        .world-3d {
+            position: absolute; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* 캠퍼스 맵 스크린 가시성 밸런스 조정 */
+        .campus-map-screen {
+            width: 85%; height: 85%;
+            object-fit: contain;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.01);
+            opacity: 0.55; 
+            mix-blend-mode: luminosity; 
+            -webkit-user-drag: none; user-drag: none; pointer-events: none;
+        }
+
+/* 💡 [전면 리뉴얼] 무대용 무빙 라이트 조명 장치 2.5D 조형 */
+        .lighting-device {
+            position: absolute; left: 4%; bottom: 8%;
+            width: 36px; height: 42px;
+            transform-style: preserve-3d;
+            z-index: 10;
+        }
+
+        /* 1) 하단 사각형 베이스 본체 (콘트롤러 박스) */
+        .light-base {
+            position: absolute; bottom: 0; left: 0;
+            width: 32px; height: 10px;
+            background: linear-gradient(to bottom, #2c2c2e, #1c1c1e);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+        }
+        /* 베이스 전면 미니 LCD 디스플레이 패널 디테일 */
+        .light-base::after {
+            content: ''; position: absolute; top: 2px; left: 10px;
+            width: 14px; height: 4px;
+            background: #0a0a0c; border: 0.5px solid #444;
+        }
+
+        /* 2) 좌우를 받치는 U자형 회전축 포크 바디 */
+        .light-fork {
+            position: absolute; bottom: 10px; left: 4px;
+            width: 26px; height: 18px;
+            border: 2px solid #2c2c2e;
+            border-top: none; /* U자 형태 구현 */
+            background: rgba(28, 28, 30, 0.9);
+            border-radius: 0 0 8px 8px;
+            box-sizing: border-box;
+        }
+
+        /* 3) 중앙 계란형 조명 헤드 (실제 렌즈가 박힌 몸통) */
+        .light-head {
+            position: absolute; top: 2px; left: 7px;
+            width: 20px; height: 24px;
+            background: radial-gradient(circle at 35% 35%, #3a3a3c, #151517);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px 10px 8px 8px; /* 둥근 계란형 실루엣 */
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.8);
+            transform: rotate(35deg);
+        }
+        
+        /* 헤더 최상단 빔 발사구 최외곽 렌즈 링 */
+        .light-head::before {
+            content: ''; position: absolute; top: 0; left: 3px;
+            width: 12px; height: 3px;
+            background: #48484a; border-radius: 50%;
+            border-bottom: 1px solid #636366;
+        }
+        /* 렌즈 안쪽 발광 코어 이펙트 */
+        .light-head::after {
+            content: ''; position: absolute; top: 1px; left: 5px;
+            width: 8px; height: 2px;
+            background: rgba(157, 78, 221, 0.8); /* 보랏빛 광원 예열 효과 */
+            border-radius: 50%;
+            filter: blur(0.5px);
+        }
+        /* 🎯 원형 스포트라이트 (오직 맑고 선명한 서클 이펙트만 하드캐리) */
+        .spotlight-circle {
+            position: absolute;
+            width: 95px; height: 95px; 
+            background: radial-gradient(circle, rgba(157, 78, 221, 0.8) 0%, rgba(74, 143, 215, 0.45) 45%, rgba(74, 143, 215, 0.1) 65%, transparent 85%);
+            border-radius: 50%;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            z-index: 5;
+            filter: blur(2px);
+            
+            /* 동건님이 커스텀해두신 황금 좌표 무빙 스캔 연동 */
+            animation: mapTargetScan 9s infinite ease-in-out;
+        }
+
+        /* 지정해두신 완벽한 좌표 루프 유지 */
+        @keyframes mapTargetScan {
+            0%, 100% { left: 28%; top: 37%; }
+            33% { left: 48%; top: 25%; }
+            66% { left: 65%; top: 53%; }
+        }
+
+        /* 3. 하단 설명 블록 */
+        .research-summary {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px; padding: 20px 22px;
+        }
+        .summary-title {
+            font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: #fff;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .summary-title i { color: #4A8FD7; }
+        .summary-desc { font-size: 0.9rem; color: #888; line-height: 1.6; margin: 0; }
+        
+        .tech-badges { display: flex; gap: 8px; margin-top: 12px; }
+        .badge {
+            background: rgba(157, 78, 221, 0.12); color: #d4affc; font-size: 0.8rem;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(157, 78, 221, 0.2);
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .wrapper { padding: 25px 15px 90px 15px; }
+            .page-header h2 { font-size: 1.6rem; }
+            .space-theater { height: 35vh; }
+            .campus-map-screen { width: 92%; height: 92%; }
+            .spotlight-circle { width: 70px; height: 70px; }
+        }
     </style>
 </head>
-<body 
-  onmousedown="parent.handleIframeStart(event, window)"
+<body  onmousedown="parent.handleIframeStart(event, window)"
   onmousemove="parent.handleIframeMove(event, window)"
   onmouseup="parent.handleIframeEnd(event, window)"
   ontouchstart="parent.handleIframeStart(event, window)"
   ontouchmove="parent.handleIframeMove(event, window)"
   ontouchend="parent.handleIframeEnd(event, window)">
 
-    <h2>서브 페이지 콘텐츠</h2>
-    <p>여기에 채워질 이력 내용들...</p>
+    <div class="wrapper">
+        <div>
+            <div class="section-tag">
+                <i class="fa-solid fa-map-location-dot"></i> 작(作) : 실감형 가이드 인터페이스
+            </div>
+            <div class="page-header">
+                <h2>Immersive Map Guide System</h2>
+                <p>졸업 연구 프로토타입: 실시간 위치 데이터 기반 공간 조명 동기화</p>
+            </div>
+        </div>
+
+        <div class="space-theater">
+            <div class="world-3d">
+                <img src="../media/campus_map_01.jpg" alt="Campus Map" class="campus-map-screen">
+                
+                <div class="lighting-device">
+                    <div class="light-fork"></div>
+                    <div class="light-head"></div>
+                    <div class="light-base"></div>
+                </div>
+            </div>
+
+            <div class="spotlight-circle"></div>
+        </div>
+
+        <div class="research-summary">
+            <div class="summary-title">
+                <i class="fa-solid fa-microchip"></i> 실시간 데이터 연동 시각 가이드 인터페이스
+            </div>
+            <p class="summary-desc">
+                지정된 디지털 캠퍼스 맵 아키텍처 위에 하드웨어 인프라 기술을 시각적으로 결합한 가이드 시스템입니다. 좌측 하단의 디바이스 노즐에서 전송되는 연동 시퀀스를 기반으로, <strong>콤팩트하게 압축된 원형(Circle) 스포트라이트</strong> 빔이 맵 내부의 특정 좌표나 이벤트 거점을 핀포인트로 조준하며 부드럽게 스캔합니다. 유저의 공간 대형 데이터와 기획 동선을 실시간 맵 레이어와 하드웨어 연출로 상호 결합하는 직관적인 실감형 인터랙션을 증명합니다.
+            </p>
+            <div class="tech-badges">
+                <span class="badge">디지털 맵 레이어 인터페이스</span>
+                <span class="badge">핀포인트 서클 스폿 가이드</span>
+                <span class="badge">공간 데이터 연동 제어</span>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
