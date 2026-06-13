@@ -345,7 +345,7 @@ window.addEventListener('wheel', (e) => {
         const scrollHeight = iframeHtml.scrollHeight || iframeBody.scrollHeight;
         const clientHeight = iframeHtml.clientHeight || iframeBody.clientHeight;
 
-        if (e.deltaY > 0 && (scrollTop + clientHeight >= scrollHeight - 5)) {
+        if (e.deltaY > 100 && (scrollTop + clientHeight >= scrollHeight - 5)) {
             isTransitioning = true;
             
             container.style.scrollBehavior = 'auto';
@@ -369,6 +369,17 @@ window.addEventListener('wheel', (e) => {
 
 // iframe 내부 이벤트를 메인 드래그 로직으로 연결
 window.handleIframeStart = function(e, iframeWin) {
+    const target = e.target;
+    if (
+        target &&
+        (
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'INPUT' ||
+            target.closest('.contact-form-box')
+        )
+    ) {
+        return;
+    }
     if (isTransitioning || !isUnfolded) return;
     const rect = iframeWin.frameElement.getBoundingClientRect();
     const touch = e.touches ? e.touches[0] : e;
