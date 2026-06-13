@@ -23,7 +23,7 @@
             text-align: center; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             padding: 20px; width: 100%; max-width: 500px;
-            box-sizing: border-box; /* 💥 안전장치 추가 */
+            box-sizing: border-box; 
         }
 
         .teaser-door-object {
@@ -86,14 +86,12 @@
         }
         .message-textarea::placeholder { color: #444; font-size: 0.88rem; }
 
-        /* 밑부분을 꽉 채우기 위해 여백과 경계선을 없앰 */
         .form-bottom-row {
             display: flex; 
             width: 100%;
             margin-top: 5px;
         }
 
-        /* 레터 박스 가로폭을 꽉 채우는 와이드 전송 버튼 */
         .submit-btn-rect {
             width: 100%; 
             background: #9D4EDD; color: #ffffff; border: none; outline: none;
@@ -137,7 +135,10 @@
         </p>
 
         <form class="contact-form-box" id="mail-form" onsubmit="sendProposalMail(event)">
-            <textarea id="user-message" class="message-textarea" placeholder="제안이나 피드백을 자유롭게 적어주세요. 회신을 원하시면 메일 주소나 연락처를 본문에 함께 남겨주시면 감사하겠습니다." required></textarea>
+            <textarea id="user-message" class="message-textarea" 
+                      onmousemove="event.stopPropagation()" 
+                      ontouchmove="event.stopPropagation()" 
+                      placeholder="제안이나 피드백을 자유롭게 적어주세요. 회신을 원하시면 메일 주소나 연락처를 본문에 함께 남겨주시면 감사하겠습니다." required></textarea>
             
             <div class="form-bottom-row">
                 <button type="submit" class="submit-btn-rect" id="send-btn">
@@ -149,17 +150,20 @@
         <div class="status-msg" id="status-text"></div>
     </div>
 
-    <script>
+    <script> // 메일 전송 기능 구현
         (function() {
             emailjs.init("fzvAspX_w5FwxNzsu"); 
         })();
 
-        // 폼 콤포넌트 영역 내부의 터치는 부모 큐브의 좌우 슬라이드 함수로 절대 흘러가지 않게 차단
         function checkIframeTarget(e) {
-            // 터치된 타깃 엘리먼트와 그 상위 부모 노드들을 추적
             let target = e.target;
+            
+            // 터치된 타깃이 TEXTAREA라면 메인 프레임워크의 드래그 매커니즘을 즉시 차단
+            if (target && target.tagName === 'TEXTAREA') {
+                return true;
+            }
+
             while (target && target.tagName !== 'BODY') {
-                // 유저가 폼 박스 내부(텍스트 영역, 빈공간, 버튼 등)를 터치 중이라면 true 반환해서 드래그 무력화
                 if (target.classList.contains('contact-form-box')) {
                     return true;
                 }
@@ -198,6 +202,5 @@
                 });
         }
     </script>
-
 </body>
 </html>
