@@ -24,7 +24,7 @@
             user-select: none;
         }
         
-        /* 스크롤바 스타일링 (트렌디하고 슬림하게) */
+        /* 스크롤바 스타일링 */
         body::-webkit-scrollbar { width: 6px; }
         body::-webkit-scrollbar-track { background: transparent; }
         body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
@@ -44,7 +44,7 @@
             font-size: 2.2rem; 
             margin: 0 0 10px 0; 
             font-weight: 700;
-            background: linear-gradient(45deg, #4A8FD7, #9D4EDD); /* 메인 큐브 연계 그라데이션 */
+            background: linear-gradient(45deg, #4A8FD7, #9D4EDD);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -96,7 +96,7 @@
             font-size: 0.8rem;
             font-weight: 500;
         }
-        /* 대형 115+ 방탈출 아카이브 컨테이너 박스 */
+        /* 방탈출 컨테이너 박스 */
         .escape-archive-card {
             background: linear-gradient(135deg, rgba(74, 143, 215, 0.05), rgba(157, 78, 221, 0.05));
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -131,13 +131,11 @@
   ontouchend="parent.handleIframeEnd(event, window)">
 
     <div class="wrapper">
-        <!-- 페이지 상단 헤더 -->
         <div class="page-header">
             <h2>About Me</h2>
             <p>안녕하세요건이입니다잘부탁드립니다</p>
         </div>
 
-        <!-- 학력 및 소속 구역 -->
         <div class="section-title">
             <i class="fa-solid fa-graduation-cap"></i> Academic & Lab History
         </div>
@@ -167,8 +165,7 @@
                 <span class="tag">강화학습</span>
             </div>
         </div>
-
-        <!-- 역량 및 핵심 스킬 구역 -->
+        
         <div class="section-title">
             <i class="fa-solid fa-code"></i> Experience
         </div>

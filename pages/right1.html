@@ -15,9 +15,6 @@
             font-family: 'Pretendard', sans-serif;
             height: 100vh;
             box-sizing: border-box;
-            
-            /* 💥 [수정] 스크롤바를 완전히 차단하던 none 속성들을 지우고, 
-               내용이 넘칠 때만 세로 스크롤바가 자연스럽게 생성되도록 합니다. */
             overflow-y: auto; 
             overflow-x: hidden;
             
@@ -27,22 +24,18 @@
             -ms-user-select: none;
             user-select: none;
         }
-        
-        /* 💥 [핵심] 크롬, 사파리, 최신 엣지용 슬림 스크롤바 커스텀 디자인 */
-        /* 스크롤바 전체 너비 설정 (기존의 칙칙하고 뚱뚱한 바를 6px로 슬림하게 변경) */
+
         body::-webkit-scrollbar { 
             width: 6px; 
         }
         
-        /* 스크롤바가 지나가는 레일(트랙) 배경 - 투명하게 해서 배경을 해치지 않음 */
         body::-webkit-scrollbar-track { 
             background: transparent; 
         }
         
-        /* 실제 사용자가 잡고 움직이는 스크롤 바(손잡이) 디자인 */
         body::-webkit-scrollbar-thumb { 
-            background: rgba(255, 255, 255, 0.15); /* 은은한 투명 흰색 */
-            border-radius: 3px; /* 둥글게 깎아서 세련되게 */
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px; 
             transition: background 0.3s ease;
         }
         
@@ -80,7 +73,7 @@
             gap: 15px; /* 사진 사이의 적당한 여백 */
         }
 
-        /* 열 타이틀 가이드 (선택 사항: 각 열이 무슨 종류인지 명시) */
+        /* 열 타이틀 */
         .column-title {
             font-size: 0.9rem;
             font-weight: 600;
@@ -119,20 +112,15 @@
             height: auto;
             display: block;
             object-fit: cover;
-            
-            /* 💥 [추정 원인 저격] 이미지 파일 자체의 드래그 앤 드롭 기능 강제 차단 */
             -webkit-user-drag: none;
             -khtml-user-drag: none;
             -moz-user-drag: none;
             -o-user-drag: none;
             user-drag: none;
-            
-            /* 마우스 오버 효과는 자식(img)이 아닌 부모(.puzzle-card)가 처리하므로
-            이미지가 마우스 이벤트를 가로채지 않고 부모에게 넘기도록 설정 */
             pointer-events: none; 
         }
 
-        /* 카드 하단 미니 라벨 (필요 없으면 지우셔도 됩니다) */
+        /* 카드 하단 미니 라벨 */
         .puzzle-label {
             font-size: 0.75rem;
             color: #555;

@@ -173,7 +173,7 @@ body, html {
     text-align: center;
     font-family: 'Pretendard', sans-serif;
     
-    font-size: 1rem; /* 무의미한 2rem 대왕 글씨 축소 */
+    font-size: 1rem;
     opacity: 0;
     pointer-events: none; /* 접혀있을 때는 마우스 이벤트를 차단 */
     transition: opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -210,7 +210,6 @@ p { color: #888; }
     border: none;
     background: transparent; /* 서브 페이지 배경이 비치도록 설정 */
     
-    /* iframe 내부 스크롤이 메인 컨테이너 터치/드래그 이벤트를 
-       방해하지 않도록 모바일에서 세로 스크롤만 허용 */
+    /* 모바일에서 세로 스크롤만 허용 */
     touch-action: pan-y; 
 }

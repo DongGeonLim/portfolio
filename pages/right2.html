@@ -15,7 +15,6 @@
             -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
 
-        /* 슬림 반투명 스크롤바 일체화 */
         body::-webkit-scrollbar { width: 6px; }
         body::-webkit-scrollbar-track { background: transparent; }
         body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
@@ -65,7 +64,6 @@
             -webkit-user-drag: none; user-drag: none; pointer-events: none;
         }
 
-        /* 💥 [동건님 커스텀 튜닝 세부값 반영 완비] 무대용 무빙 라이트 조명 장치 2.5D 조형 */
         .lighting-device {
             position: absolute; left: 4%; bottom: 8%;
             width: 36px; height: 42px;
@@ -73,7 +71,6 @@
             z-index: 10;
         }
 
-        /* 1) 하단 사각형 베이스 본체 (콘트롤러 박스) - 32px 다운사이징 반영 */
         .light-base {
             position: absolute; bottom: 0; left: 0;
             width: 32px; height: 10px;
@@ -82,14 +79,13 @@
             border-radius: 2px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.7);
         }
-        /* 베이스 전면 미니 LCD 디스플레이 패널 디테일 */
+
         .light-base::after {
             content: ''; position: absolute; top: 2px; left: 10px;
             width: 14px; height: 4px;
             background: #0a0a0c; border: 0.5px solid #444;
         }
 
-        /* 2) 좌우를 받치는 U자형 회전축 포크 바디 */
         .light-fork {
             position: absolute; bottom: 10px; left: 4px;
             width: 26px; height: 18px;
@@ -100,7 +96,6 @@
             box-sizing: border-box;
         }
 
-        /* 3) 중앙 계란형 조명 헤드 (실제 렌즈가 박힌 몸통) - 35deg 동선 정밀 조준 회전각 반영 */
         .light-head {
             position: absolute; top: 2px; left: 7px;
             width: 20px; height: 24px;
@@ -110,7 +105,7 @@
             box-shadow: inset -2px -2px 5px rgba(0,0,0,0.8);
             transform: rotate(35deg);
         }
-        /* 헤더 최상단 빔 발사구 링 */
+
         .light-head::before {
             content: ''; position: absolute; top: 0; left: 4px;
             width: 12px; height: 3px;
@@ -131,7 +126,7 @@
             66% { left: 65%; top: 53%; }
         }
 
-        /* 3. 결과물 영상 플레이어 존 */
+        /* 3. 결과물 영상 플레이어 영역 */
         .video-section {
             margin: 25px 0; background: rgba(255, 255, 255, 0.01);
             border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 14px;

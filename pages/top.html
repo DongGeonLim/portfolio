@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* 1. 프레임 및 스크롤바 커스텀 (동건님이 맘에 들어 하신 슬림 스크롤바 유지) */
+        /* 1. 프레임 및 스크롤바 커스텀 */
         body { 
             margin: 0; 
             color: #ffffff; 
@@ -37,7 +37,7 @@
             margin: 0 auto;
         }
 
-        /* 2. 기획자/작가 정체성 어필 태그 */
+        /* 2. 어필 태그 */
         .section-tag {
             font-size: 0.85rem;
             font-weight: 600;
@@ -50,7 +50,7 @@
             gap: 8px;
         }
 
-        /* 3. 감각적인 책 표지/레이아웃 구역 */
+        /* 3. 책 표지/레이아웃 구역 */
         .book-container {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -62,7 +62,7 @@
             overflow: hidden;
         }
 
-        /* 책의 입체적인 서사 느낌을 주는 왼쪽 세로 띠선 */
+        /* 입체적인 느낌 */
         .book-container::before {
             content: '';
             position: absolute;
@@ -100,16 +100,15 @@
             font-weight: 300;
             line-height: 1.9;
             color: rgba(255, 255, 255, 0.8);
-            text-align: justify; /* 소설 책 특유의 정렬 방식 */
+            text-align: justify;
             word-break: keep-all;
             
-            /* 간지나게 약간 흐리게 만드는 블러 효과의 핵심 속성들 */
+            /* 블러 효과 */
             filter: blur(0.6px); 
             opacity: 0.70;
             transition: filter 0.4s ease, opacity 0.4s ease;
         }
 
-        /* 사용자가 마우스를 올리거나 집중할 때 선명해지는 명품 디테일 효과 */
         .book-container:hover .book-passage {
             filter: blur(0px);
             opacity: 0.95;
@@ -117,26 +116,26 @@
 
         @media (max-width: 768px) {
             .wrapper {
-                padding: 25px 15px 100px 15px; /* 전체적인 상하좌우 외곽 여백을 줄여 공간 확보 */
+                padding: 25px 15px 100px 15px;
             }
 
             .section-tag {
-                margin-bottom: 20px; /* 상단 꼬리표 여백 축소 */
+                margin-bottom: 20px;
                 font-size: 0.8rem;
             }
 
             .book-container {
-                padding: 25px 20px; /* 💥 스크린샷에서 가장 답답해 보였던 카드 내부 여백을 슬림하게 조정 */
+                padding: 25px 20px;
                 margin-bottom: 30px;
                 border-radius: 12px;
             }
 
             .book-meta {
-                margin-bottom: 25px; /* 타이틀과 본문 사이의 과한 공백 압축 */
+                margin-bottom: 25px;
             }
 
             .book-title {
-                font-size: 1.8rem; /* 💥 모바일 한 화면에 예쁘게 안착하도록 서체 크기 다운사이징 */
+                font-size: 1.8rem;
             }
 
             .book-author {
@@ -144,12 +143,12 @@
             }
 
             .book-passage {
-                font-size: 0.95rem; /* 자칫 뚱뚱해 보일 수 있는 본문 글씨를 밀도 있게 조정 */
-                line-height: 1.8;   /* 행간을 모바일 가독성에 맞춰 소폭 최적화 */
+                font-size: 0.95rem;
+                line-height: 1.8;
             }
         }
 
-        /* 5. 하단 콘텐츠 기획 및 스토리 제작 역량 어필 영역 */
+        /* 5. 하단 역량 어필 영역 */
         .capability-section {
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             padding-top: 30px;

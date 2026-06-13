@@ -16,7 +16,6 @@
             box-sizing: border-box; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
             -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
-            /* 💥 [패치 1] 브라우저단에서 가로 스크롤 및 좌우 스와이프 제스처 완전 박살내기 */
             touch-action: pan-y !important;
         }
 
@@ -27,7 +26,6 @@
             box-sizing: border-box; /* 💥 안전장치 추가 */
         }
 
-        /* 🚪 상징적인 3D 미니멀 도어 오브젝트 */
         .teaser-door-object {
             width: 44px; height: 75px;
             border: 2px solid rgba(255, 255, 255, 0.15);
@@ -61,10 +59,8 @@
             font-weight: 400; letter-spacing: -0.2px; word-break: keep-all; max-width: 360px;
         }
 
-        /* ✉ 2. 단일 텍스트박스 포커스 패널 */
         .contact-form-box {
             width: 100%; 
-            /* 💥 [패치 2] 패딩 때문에 전체 가로폭이 400px을 초과해 삐져나가는 현상 완벽 차단 */
             max-width: calc(100% - 40px); 
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -90,14 +86,14 @@
         }
         .message-textarea::placeholder { color: #444; font-size: 0.88rem; }
 
-        /* 밑부분을 꽉 채우기 위해 여백과 경계선을 걷어낸 하단 로우 */
+        /* 밑부분을 꽉 채우기 위해 여백과 경계선을 없앰 */
         .form-bottom-row {
             display: flex; 
             width: 100%;
             margin-top: 5px;
         }
 
-        /* 레터 박스 가로폭을 100% 꽉 채우는 대형 와이드 전송 버튼 */
+        /* 레터 박스 가로폭을 꽉 채우는 와이드 전송 버튼 */
         .submit-btn-rect {
             width: 100%; 
             background: #9D4EDD; color: #ffffff; border: none; outline: none;
@@ -158,9 +154,9 @@
             emailjs.init("fzvAspX_w5FwxNzsu"); 
         })();
 
-        // 폼 콤포넌트 영역 내부의 터치는 부모 큐브의 좌우 슬라이드 함수로 절대 흘러가지 않게 막는 특수 차단기
+        // 폼 콤포넌트 영역 내부의 터치는 부모 큐브의 좌우 슬라이드 함수로 절대 흘러가지 않게 차단
         function checkIframeTarget(e) {
-            // 터치된 타깃 엘리먼트와 그 상위 부모 노드들을 싹 추적
+            // 터치된 타깃 엘리먼트와 그 상위 부모 노드들을 추적
             let target = e.target;
             while (target && target.tagName !== 'BODY') {
                 // 유저가 폼 박스 내부(텍스트 영역, 빈공간, 버튼 등)를 터치 중이라면 true 반환해서 드래그 무력화

@@ -24,7 +24,7 @@ let currentX = -25, currentY = -15;
 // 초기화 로직
 window.addEventListener('load', () => {
     container.style.touchAction = 'none';
-    // 초기 위치 강제 고정 (애니메이션 없이)
+    // 초기 위치 강제 고정
     container.scrollTo({ left: window.innerWidth, behavior: 'auto' });
     vContainer.scrollTo({ top: window.innerHeight, behavior: 'auto' });
     
@@ -34,7 +34,7 @@ window.addEventListener('load', () => {
     vContainer.style.scrollBehavior = 'auto';
 });
 
-// 모바일 강제 핀치 줌(확대/축소) 및 더블 탭 확대 원천 잠금
+// 모바일 줌 및 더블 탭 확대 잠금
 document.documentElement.addEventListener('touchstart', (e) => {
     if (e.touches.length > 1) {
         e.preventDefault(); // 두 손가락 이상 터치 시 무시
@@ -128,11 +128,11 @@ const handleDragMove = (clientX, clientY, e) => {
         const vIndex = Math.round(vCurrentRaw);
 
         if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
-            // 💥 완벽한 센터 세로축(vIndex === 1)일 때만 가로 드래그 허용, 탑/바텀에서는 가로이동 원천 봉쇄
+            // 완벽한 센터 세로축(vIndex === 1)일 때만 가로 드래그 허용, 탑/바텀에서는 가로 이동 금지
             if (vIndex === 1 && Math.abs(vCurrentRaw - 1) < 0.1) {
                 dragDirection = 'horizontal';
             } else {
-                // 탑/바텀에서 유저가 억지로 좌우로 찢으려고 시도할 시 이벤트를 완전히 킬(Kill)시킴
+                // 이벤트 죽이기
                 dragDirection = 'locked'; 
             }
         } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > threshold) {
