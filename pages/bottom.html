@@ -68,6 +68,7 @@
             box-sizing: border-box;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             display: flex; flex-direction: column; gap: 12px;
+            touch-action: none;
         }
         .contact-form-box:focus-within {
             border-color: rgba(157, 78, 221, 0.5);
@@ -120,12 +121,12 @@
 
 <!-- 드래그 차단 방어막 필터링 탑재 -->
 <body 
-  onmousedown="if(event.target.tagName !== 'TEXTAREA') parent.handleIframeStart(event, window)"
-  onmousemove="if(event.target.tagName !== 'TEXTAREA') parent.handleIframeMove(event, window)"
-  onmouseup="if(event.target.tagName !== 'TEXTAREA') parent.handleIframeEnd(event, window)"
-  ontouchstart="if(event.target.tagName !== 'TEXTAREA') parent.handleIframeStart(event, window)"
-  ontouchmove="if(event.target.tagName !== 'TEXTAREA') parent.handleIframeMove(event, window)"
-  ontouchend="if(event.target.tagName !== 'TEXTAREA') parent.handleIframeEnd(event, window)">
+  onmousedown="if(event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON' && event.target.tagName !== 'I') parent.handleIframeStart(event, window)"
+  onmousemove="if(event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON' && event.target.tagName !== 'I') parent.handleIframeMove(event, window)"
+  onmouseup="if(event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON' && event.target.tagName !== 'I') parent.handleIframeEnd(event, window)"
+  ontouchstart="if(event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON' && event.target.tagName !== 'I') parent.handleIframeStart(event, window)"
+  ontouchmove="if(event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON' && event.target.tagName !== 'I') parent.handleIframeMove(event, window)"
+  ontouchend="if(event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON' && event.target.tagName !== 'I') parent.handleIframeEnd(event, window)">
 
     <div class="teaser-container">
         <div class="teaser-door-object"></div>
@@ -136,9 +137,9 @@
             스토리 창작 역량과 실시간 제어 하드웨어 스택이 결합된 세상에 없던 차세대 몰입형 오프라인 콘텐츠가 곧 시작됩니다.
         </p>
 
-        <!-- 📥 [간소화 완성] 오직 단 하나의 대형 텍스트 레터 박스 -->
+        <!-- [간소화 완성] 오직 단 하나의 대형 텍스트 레터 박스 -->
         <form class="contact-form-box" id="mail-form" onsubmit="sendProposalMail(event)">
-            <!-- 💥 동건님의 요청대로 플레이스홀더 가이드를 직관적으로 변경했습니다. -->
+            <!-- 동건님의 요청대로 플레이스홀더 가이드를 직관적으로 변경했습니다. -->
             <textarea id="user-message" class="message-textarea" placeholder="제안이나 피드백을 자유롭게 적어주세요. 회신을 원하시면 메일 주소나 연락처를 본문에 함께 남겨주시면 감사하겠습니다." required></textarea>
             
             <div class="form-bottom-row">
@@ -154,7 +155,7 @@
     <!-- 다이렉트 메일 포워딩 엔진 -->
     <script>
         (function() {
-            emailjs.init("YOUR_PUBLIC_KEY"); 
+            emailjs.init("fzvAspX_w5FwxNzsu"); 
         })();
 
         function sendProposalMail(e) {
@@ -170,14 +171,14 @@
 
             // 기업 메일 인풋을 제외하고 본문 하나로만 데이터를 정제하여 포워딩
             const templateParams = {
-                from_email: "Portfolio Visitor",
-                message: `동건님 포트폴리오 바텀 페이지 제안서 발송:\n\n${msgInput.value}`
+                from_email: "Visitor",
+                message: `${msgInput.value}`
             };
 
-            emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+            emailjs.send('service_ut05z6r', 'template_m716jrj', templateParams)
                 .then(function() {
                     statusText.style.color = '#4A8FD7';
-                    statusText.innerText = "✔ 제안서 전송 완료! 곧 동건님이 응답합니다.";
+                    statusText.innerText = "✔ 제안서 전송 완료!";
                     msgInput.value = ""; 
                     sendBtn.disabled = false;
                 }, function(error) {
