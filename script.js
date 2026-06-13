@@ -30,10 +30,26 @@ window.addEventListener('load', () => {
     
     updateIndicator();
     
-    // 첫 로딩 후 드래그 모션을 위해 behavior는 auto로 유지 (finishDrag에서 제어)
     container.style.scrollBehavior = 'auto';
     vContainer.style.scrollBehavior = 'auto';
 });
+
+// 모바일 강제 핀치 줌(확대/축소) 및 더블 탭 확대 원천 잠금
+document.documentElement.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) {
+        e.preventDefault(); // 두 손가락 이상 터치 시 무시
+    }
+}, { passive: false });
+
+let lastTouchEnd = 0;
+document.documentElement.addEventListener('touchend', (e) => {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+        e.preventDefault(); // 0.3초 이내 더블 탭 확대 방어
+    }
+    lastTouchEnd = now;
+}, { passive: false });
+
 
 // 인디케이터 및 자동 펼침
 const updateIndicator = (manualH, manualV) => {
@@ -51,8 +67,6 @@ const updateIndicator = (manualH, manualV) => {
     
     isTransitioning = false;
 
-    // 센터(1, 1)가 아닌 외부 이력 페이지로 완전히 들어왔다면
-    // 설령 드래그 중에 잠시 접혔거나 상태가 꼬였더라도 무조건 '펼침' 상태로 리셋합니다.
     if (!(hIndex === 1 && vIndex === 1)) {
         isUnfolded = true;
         cube.classList.add('unfolded');
@@ -85,7 +99,7 @@ const handleDragStart = (clientX, clientY) => {
     
     container.style.scrollSnapType = 'none';
     vContainer.style.scrollSnapType = 'none';
-    container.style.scrollBehavior = 'auto'; // smooth 애니메이션 즉시 중단
+    container.style.scrollBehavior = 'auto';
     vContainer.style.scrollBehavior = 'auto';
     
     dragDirection = null;
@@ -105,32 +119,49 @@ const handleDragMove = (clientX, clientY, e) => {
     const dx = clientX - scrollStartX;
     const dy = clientY - scrollStartY;
 
+    // 축 판정 및 락 시스템 대폭 고도화
     if (!dragDirection) {
-        const threshold = 5;
-        const hIndex = Math.round(container.scrollLeft / window.innerWidth);
-        const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+        const threshold = 6; // 판정 노이즈 방지 임계값
+        const hCurrentRaw = container.scrollLeft / window.innerWidth;
+        const vCurrentRaw = vContainer.scrollTop / window.innerHeight;
+        const hIndex = Math.round(hCurrentRaw);
+        const vIndex = Math.round(vCurrentRaw);
 
         if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
-            if (vIndex === 1) dragDirection = 'horizontal';
+            // 💥 완벽한 센터 세로축(vIndex === 1)일 때만 가로 드래그 허용, 탑/바텀에서는 가로이동 원천 봉쇄
+            if (vIndex === 1 && Math.abs(vCurrentRaw - 1) < 0.1) {
+                dragDirection = 'horizontal';
+            } else {
+                // 탑/바텀에서 유저가 억지로 좌우로 찢으려고 시도할 시 이벤트를 완전히 킬(Kill)시킴
+                dragDirection = 'locked'; 
+            }
         } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > threshold) {
-            if (hIndex === 1) dragDirection = 'vertical';
+            // 가로 슬라이더가 완전히 센터(hIndex === 1)에 안착해 있을 때만 세로 드래그 허용
+            if (hIndex === 1 && Math.abs(hCurrentRaw - 1) < 0.1) {
+                dragDirection = 'vertical';
+            } else {
+                dragDirection = 'locked';
+            }
         }
         return;
     }
 
+    // 지정된 락 방향에 따른 물리 스크롤 매핑 분기 제어
     if (dragDirection === 'horizontal') {
         container.scrollLeft = scrollLeft - dx; 
     } else if (dragDirection === 'vertical') {
         vContainer.scrollTop = scrollTopV - dy;
+    } else if (dragDirection === 'locked') {
+        // 방향 오작동 방어 모드 동작 중일 때는 스크롤 누적을 완전히 차단
+        if (e && e.cancelable) e.preventDefault();
     }
 };
 
 window.addEventListener('mousemove', (e) => handleDragMove(e.pageX, e.pageY, e));
 
-/* 애니메이션 끊김 및 순간이동 방지 로직 */
-
 function finishDrag() {
-    if (!dragDirection) {
+    if (!dragDirection || dragDirection === 'locked') {
+        dragDirection = null;
         isPageScrolling = false; isVerticalScrolling = false;
         return;
     }
@@ -155,8 +186,6 @@ function finishDrag() {
     } else if (activeDir === 'vertical') {
         const diff = vCurrent - sV;
         
-        // [모바일 top 페이지 탈출 리다이렉션 추가]
-        // 현재 top 페이지(sV === 0)에 정착해 있는 상태이고 사용자가 위로 밀었을 때(diff > 0)
         if (sV === 0 && diff > 0) {
             const topIframe = document.querySelector('#top-page iframe');
             if (topIframe) {
@@ -165,19 +194,16 @@ function finishDrag() {
                 const scrollHeight = iframeDoc.documentElement.scrollHeight || iframeDoc.body.scrollHeight;
                 const clientHeight = iframeDoc.documentElement.clientHeight || iframeDoc.body.clientHeight;
 
-                // 스크롤이 완전히 끝에 도달한 상태에서 드래그가 일어났다면 메인(vTarget = 1)으로 보정
                 if (scrollTop + clientHeight >= scrollHeight - 10) {
                     vTarget = 1; 
                 }
             }
         } else {
-            // 기존 상하 스냅 타깃 계산 로직
             if (diff > V_THRESHOLD) vTarget = Math.min(sV + 1, 2);
             else if (diff < -V_THRESHOLD) vTarget = Math.max(sV - 1, 0);
         }
     }
 
-    // scrollTo 실행 전 다시 한번 모든 설정을 auto로 고정
     container.style.scrollBehavior = 'auto';
     vContainer.style.scrollBehavior = 'auto';
 
@@ -192,20 +218,19 @@ function finishDrag() {
         updateIndicator(hTarget, vTarget);
     });
 
-    // 타이머를 변수에 저장하여 언제든 취소 가능하게 함
+    if (snapTimeout) clearTimeout(snapTimeout);
     snapTimeout = setTimeout(() => {
         container.style.scrollSnapType = 'x mandatory';
         vContainer.style.scrollSnapType = 'y mandatory';
         snapTimeout = null;
-    }, 700); // 애니메이션 시간을 고려해 넉넉히 0.7초 부여
+    }, 700);
 }
 
 // 모든 입력(마우스/터치) 관리 섹션
-
 const startAction = (clientX, clientY, target) => {
     if (isTransitioning) return;
     if (isUnfolded) {
-        handleDragStart(clientX, clientY); //
+        handleDragStart(clientX, clientY); 
     } else if (target.classList.contains('face')) {
         isDraggingCube = true;
         startX = clientX; startY = clientY;
@@ -216,7 +241,7 @@ const startAction = (clientX, clientY, target) => {
 const moveAction = (clientX, clientY, e) => {
     if (isTransitioning) return;
     if (isUnfolded) {
-        handleDragMove(clientX, clientY, e); //
+        handleDragMove(clientX, clientY, e); 
     } else if (isDraggingCube) {
         const dx = clientX - startX; const dy = clientY - startY;
         const absY = Math.abs(currentY) % 360;
@@ -234,7 +259,7 @@ const endAction = (clientX, clientY) => {
         isDraggingCube = false; cube.classList.remove('dragging');
     }
     if (isPageScrolling || isVerticalScrolling) {
-        finishDrag(); //
+        finishDrag(); 
     }
 };
 
@@ -243,14 +268,12 @@ container.addEventListener('mousedown', (e) => startAction(e.pageX, e.pageY, e.t
 window.addEventListener('mousemove', (e) => moveAction(e.pageX, e.pageY, e));
 window.addEventListener('mouseup', (e) => endAction(e.pageX, e.pageY));
 
-// 마우스가 브라우저 화면 밖으로 이탈하면 안전하게 드래그 상태를 해제합니다.
 window.addEventListener('mouseleave', (e) => {
     if (isPageScrolling || isVerticalScrolling || isDraggingCube) {
         endAction(e.pageX, e.pageY);
     }
 });
 
-// 우리 커스텀 드래그 로직을 방해하지 못하도록 원천 차단합니다.
 container.addEventListener('dragstart', (e) => {
     e.preventDefault();
 });
@@ -261,7 +284,10 @@ container.addEventListener('touchstart', (e) => {
 }, {passive: false});
 
 window.addEventListener('touchmove', (e) => {
-    if (isUnfolded || isDraggingCube) e.preventDefault();
+    // 모바일 브라우저의 기본 가로/세로 네이티브 제스처 난입 완전 차단 안정화
+    if (isUnfolded || isDraggingCube) {
+        if (e.cancelable) e.preventDefault();
+    }
     const t = e.touches[0];
     moveAction(t.pageX, t.pageY, e);
 }, {passive: false});
@@ -302,11 +328,8 @@ scene.addEventListener('click', (e) => {
     }
 });
 
-// script.js 맨 아래쪽 이벤트 연결 구역에 추가
-
 // PC 마우스 휠 감지하여 상단 페이지에서 메인으로 복귀시키기
 window.addEventListener('wheel', (e) => {
-    // 큐브가 펼쳐진 상태이고, 현재 스크롤 위치가 top-page(vContainer.scrollTop === 0)일 때만 작동
     const hIndex = Math.round(container.scrollLeft / window.innerWidth);
     const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
 
@@ -318,12 +341,10 @@ window.addEventListener('wheel', (e) => {
         const iframeBody = iframeDoc.body;
         const iframeHtml = iframeDoc.documentElement;
 
-        // iframe 내부의 현재 스크롤 위치와 끝 지점 계산
         const scrollTop = iframeHtml.scrollTop || iframeBody.scrollTop;
         const scrollHeight = iframeHtml.scrollHeight || iframeBody.scrollHeight;
         const clientHeight = iframeHtml.clientHeight || iframeBody.clientHeight;
 
-        // 휠을 아래로 내릴 때 (e.deltaY > 0) + 서브 페이지 스크롤이 맨 바닥에 닿았을 때
         if (e.deltaY > 0 && (scrollTop + clientHeight >= scrollHeight - 5)) {
             isTransitioning = true;
             
@@ -332,12 +353,10 @@ window.addEventListener('wheel', (e) => {
 
             requestAnimationFrame(() => {
                 container.scrollLeft = window.innerWidth;
-                // 메인 히어로 센터(vTarget = 1)로 부드럽게 복귀
                 vContainer.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
                 updateIndicator(1, 1);
             });
 
-            // 스냅 바인딩 마무리 타임아웃
             if (snapTimeout) clearTimeout(snapTimeout);
             snapTimeout = setTimeout(() => {
                 container.style.scrollSnapType = 'x mandatory';
@@ -348,33 +367,27 @@ window.addEventListener('wheel', (e) => {
     }
 }, { passive: true });
 
-// iframe 내부 이벤트를 메인 드래그 로직으로 연결해주는 래퍼 함수들
+// iframe 내부 이벤트를 메인 드래그 로직으로 연결
 window.handleIframeStart = function(e, iframeWin) {
     if (isTransitioning || !isUnfolded) return;
-    
-    // iframe 내부 좌표를 메인 스크린 좌표 기준으로 보정
     const rect = iframeWin.frameElement.getBoundingClientRect();
     const touch = e.touches ? e.touches[0] : e;
     const pageX = touch.clientX + rect.left;
     const pageY = touch.clientY + rect.top;
-    
     startAction(pageX, pageY, iframeWin.frameElement);
 };
 
 window.handleIframeMove = function(e, iframeWin) {
     if (isTransitioning || !isUnfolded || isDraggingCube) return;
     if (!isPageScrolling && !isVerticalScrolling) return;
-    
     const rect = iframeWin.frameElement.getBoundingClientRect();
     const touch = e.touches ? e.touches[0] : e;
     const pageX = touch.clientX + rect.left;
     const pageY = touch.clientY + rect.top;
-    
     moveAction(pageX, pageY, e);
 };
 
 window.handleIframeEnd = function(e, iframeWin) {
-    // endAction은 좌표가 크게 중요하지 않으므로 그대로 전달
     const touch = e.changedTouches ? e.changedTouches[0] : (e.touches ? e.touches[0] : e);
     endAction(touch ? touch.pageX : 0, touch ? touch.pageY : 0);
 };
