@@ -155,6 +155,45 @@
             emailjs.init("fzvAspX_w5FwxNzsu"); 
         })();
 
+        // 모바일 텍스트 박스 내부 터치 제스처 차단
+        window.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.getElementById('user-message');
+            
+            if (textarea) {
+                // 터치가 시작될 때 부모의 드래그 함수가 호출되지 않도록 차단
+                textarea.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+
+                // 터치 무브가 일어날 때 부모로 이벤트가 흘러가는 것을 막고, 브라우저 기본 좌우 스와이프 킬
+                textarea.addEventListener('touchmove', function(e) {
+                    e.stopPropagation();
+                    
+                    // 입력창 내부에서 스크롤이 위아래로 움직여야 하므로, 
+                    // 터치 이동 방향이 세로(Y)가 아닐 때(좌우 드래그 시)만 네이티브 제스처 방어
+                    const touch = e.touches[0];
+                    if (this.lastTouchX !== undefined) {
+                        const dx = Math.abs(touch.clientX - this.lastTouchX);
+                        const dy = Math.abs(touch.clientY - this.lastTouchY);
+                        
+                        // 좌우 미세 움직임 벡터가 감지되면 브라우저 스와이프 동작 완전 무력화
+                        if (dx > dy && e.cancelable) {
+                            e.preventDefault();
+                        }
+                    }
+                    this.lastTouchX = touch.clientX;
+                    this.lastTouchY = touch.clientY;
+                }, { passive: false });
+
+                // 터치가 끝났을 때 데이터 초기화
+                textarea.addEventListener('touchend', function(e) {
+                    e.stopPropagation();
+                    this.lastTouchX = undefined;
+                    this.lastTouchY = undefined;
+                }, { passive: true });
+            }
+        });
+
         function checkIframeTarget(e) {
             let target = e.target;
             
