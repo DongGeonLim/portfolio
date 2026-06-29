@@ -2,220 +2,70 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Next Stage | Contact</title>
+    <title>Magic Archive | 연출과 현상</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    
     <style>
-        /* 1. 기본 프레임 및 여백 세팅 */
         body { 
             margin: 0; color: #ffffff; background: transparent; 
             font-family: 'Pretendard', sans-serif; height: 100vh;
-            box-sizing: border-box; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; touch-action: pan-y;
+        }
+
+        .archive-wrapper {
+            width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* 영상 그리드 (1:1 비율 유지) */
+        .video-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;
+        }
+        .video-item {
+            width: 100%; aspect-ratio: 4 / 5;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
-            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
-            touch-action: pan-y !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        .teaser-container {
-            text-align: center; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 20px; width: 100%; max-width: 500px;
-            box-sizing: border-box; 
-        }
-
-        .teaser-door-object {
-            width: 44px; height: 75px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-bottom: none; border-radius: 4px 4px 0 0;
-            margin-bottom: 25px; position: relative;
-            background: rgba(255, 255, 255, 0.01);
-            box-shadow: 0 -10px 30px rgba(157, 78, 221, 0.25), inset 0 0 15px rgba(157, 78, 221, 0.1);
-            transition: border-color 0.5s ease, box-shadow 0.5s ease;
-        }
-        .teaser-door-object::after {
-            content: ''; position: absolute; right: 8px; top: 50%; width: 4px; height: 4px;
-            background: rgba(255, 255, 255, 0.2); border-radius: 50%;
-        }
-        .teaser-container:hover .teaser-door-object {
-            border-color: rgba(157, 78, 221, 0.6);
-            box-shadow: 0 -15px 40px rgba(157, 78, 221, 0.5), inset 0 0 20px rgba(157, 78, 221, 0.2);
-        }
+        video { width: 100%; height: 100%; object-fit: cover; }
 
         /* 타이포그래피 */
-        .teaser-tag {
-            font-size: 0.8rem; font-weight: 600; color: #9D4EDD;
-            letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; opacity: 0.8;
-        }
-        .teaser-title {
-            font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; margin: 0 0 18px 0;
-            background: linear-gradient(135deg, #ffffff 30%, rgba(255,255,255,0.4));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .teaser-desc {
-            font-size: 0.92rem; color: #aaa; line-height: 1.6; margin: 0 0 30px 0;
-            font-weight: 400; letter-spacing: -0.2px; word-break: keep-all; max-width: 360px;
-        }
+        .section-tag { color: #9D4EDD; font-size: 0.75rem; font-weight: 700; letter-spacing: 4px; margin-bottom: 10px; }
+        .main-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px; }
+        .desc-text { color: #888; font-size: 0.9rem; line-height: 1.6; word-break: keep-all; }
 
-        .contact-form-box {
-            width: 100%; 
-            max-width: calc(100% - 40px); 
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px; padding: 16px;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            display: flex; flex-direction: column; gap: 12px;
-            touch-action: none;
-        }
-        .contact-form-box:focus-within {
-            border-color: rgba(157, 78, 221, 0.5);
-            box-shadow: 0 0 20px rgba(157, 78, 221, 0.15);
-        }
-
-        .message-textarea {
-            width: 100%; 
-            height: 140px; 
-            background: transparent; border: none; outline: none;
-            color: #ffffff; font-family: 'Pretendard', sans-serif; font-size: 0.9rem;
-            line-height: 1.6; resize: none; box-sizing: border-box;
-            padding-bottom: 8px;
-            -webkit-user-select: text; user-select: text;
-
-            touch-action: auto !important; /* 내부 터치 동작 허용 */
-            -webkit-overflow-scrolling: touch;
-        }
-        .message-textarea::placeholder { color: #444; font-size: 0.88rem; }
-
-        .form-bottom-row {
-            display: flex; 
-            width: 100%;
-            margin-top: 5px;
-        }
-
-        .submit-btn-rect {
-            width: 100%; 
-            background: #9D4EDD; color: #ffffff; border: none; outline: none;
-            padding: 0 20px; 
-            border-radius: 6px; 
-            font-size: 0.88rem; font-weight: 600;
-            cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; 
-            gap: 8px;
-            transition: background 0.2s ease, transform 0.1s ease;
-            height: 40px; 
-            box-sizing: border-box;
-        }
-        .submit-btn-rect:hover { background: #7B1B7E; }
-        .submit-btn-rect:active { transform: scale(0.99); }
-
-        @media (max-width: 768px) {
-            .teaser-title { font-size: 1.8rem; }
-            .teaser-desc { font-size: 0.85rem; max-width: 300px; margin-bottom: 20px; }
-            .contact-form-box { max-width: 340px; padding: 12px; }
-            .message-textarea { height: 110px; } 
+        @media (max-width: 480px) {
+            .video-grid { gap: 10px; }
+            .main-title { font-size: 1.5rem; }
         }
     </style>
 </head>
-
 <body 
-  onmousedown="if(!checkIframeTarget(event)) parent.handleIframeStart(event, window)"
-  onmousemove="if(!checkIframeTarget(event)) parent.handleIframeMove(event, window)"
-  onmouseup="if(!checkIframeTarget(event)) parent.handleIframeEnd(event, window)"
-  ontouchstart="if(!checkIframeTarget(event)) parent.handleIframeStart(event, window)"
-  ontouchmove="if(!checkIframeTarget(event)) parent.handleIframeMove(event, window)"
-  ontouchend="if(!checkIframeTarget(event)) parent.handleIframeEnd(event, window)">
+  onmousedown="parent.handleIframeStart(event, window)"
+  onmousemove="parent.handleIframeMove(event, window)"
+  onmouseup="parent.handleIframeEnd(event, window)"
+  ontouchstart="parent.handleIframeStart(event, window)"
+  ontouchmove="parent.handleIframeMove(event, window)"
+  ontouchend="parent.handleIframeEnd(event, window)">
 
-    <div class="teaser-container">
-        <div class="teaser-door-object"></div>
+    <div class="archive-wrapper">
+        <div class="section-tag">MAGIC ARCHIVE</div>
+        <h1 class="main-title">연출과 현상</h1>
         
-        <div class="teaser-tag">방탈출 만들고 싶어요</div>
-        <h1 class="teaser-title">READY TO BUILD</h1>
-        <p class="teaser-desc">
-            소프트웨어 전공을 기반으로 세상에 없던 차세대 몰입형 콘텐츠를 디자인 하겠습니다.
-        </p>
-
-        <form class="contact-form-box" id="mail-form" onsubmit="sendProposalMail(event)"
-        ontouchstart="event.stopPropagation()"
-        ontouchmove="event.stopPropagation()"
-        ontouchend="event.stopPropagation()">
-            <textarea id="user-message" class="message-textarea" 
-                onmousemove="event.stopPropagation()" 
-                ontouchmove="event.stopPropagation()" 
-                ontouchend="event.stopPropagation()"
-                placeholder="제안이나 피드백을 자유롭게 적어주세요. 회신을 원하시면 메일 주소나 연락처를 본문에 함께 남겨주시면 감사하겠습니다." required></textarea>
-            
-            <div class="form-bottom-row">
-                <button type="submit" class="submit-btn-rect" id="send-btn">
-                    <span>제안서 보내기</span> <i class="fa-solid fa-paper-plane"></i>
-                </button>
+        <div class="video-grid">
+            <div class="video-item">
+                <video src="../media/magic1.mp4" autoplay loop muted playsinline preload="auto"></video>
             </div>
-        </form>
-        
-        <div class="status-msg" id="status-text"></div>
+            <div class="video-item">
+                <video src="../media/magic2.mov" autoplay loop muted playsinline preload="auto"></video>
+            </div>
+        </div>
+
+        <p class="desc-text">
+            <strong>연출</strong>은 치밀하게 설계된 의도이며,<br>
+            <strong>현상</strong>은 그 의도가 관객의 경험 속에서 마법처럼 실현되는 순간입니다.
+        </p>
     </div>
-
-    <script> // 메일 전송 기능 구현
-        (function() {
-            emailjs.init("fzvAspX_w5FwxNzsu"); 
-        })();
-
-        function checkIframeTarget(e) {
-            let target = e.target;
-            
-            // 터치된 타깃이 TEXTAREA라면 메인 프레임워크의 드래그 매커니즘을 즉시 차단
-            if (target && target.tagName === 'TEXTAREA') {
-                return true;
-            }
-
-            while (target && target.tagName !== 'BODY') {
-                if (target.classList.contains('contact-form-box')) {
-                    return true;
-                }
-                target = target.parentNode;
-            }
-            return false;
-        }
-
-        function sendProposalMail(e) {
-            // 1. 브라우저 기본 동작 방지 (폼 제출 시 페이지가 새로고침되는 현상 차단)
-            e.preventDefault();
-            
-            // 2. DOM 요소 추출 (텍스트 입력창, 전송 버튼, 상태 메시지 출력 구역)
-            const msgInput = document.getElementById('user-message');
-            const sendBtn = document.getElementById('send-btn');
-            const statusText = document.getElementById('status-text');
-            
-            // 3. 비동기 요청 중 중복 클릭 방지를 위해 버튼 비활성화 및 로딩 상태 표시
-            sendBtn.disabled = true;
-            statusText.style.color = '#9D4EDD';
-            statusText.innerText = "제안서를 전송하는 중...";
-
-            // 4. EmailJS 템플릿에 매핑될 데이터 객체(매개변수) 정의
-            const templateParams = {
-                from_email: "Visitor",
-                message: `${msgInput.value}` // 템플릿 리터럴 문법을 사용한 입력값 주입
-            };
-
-            // 5. EmailJS SDK를 통한 실제 외부 메일 서버 비동기 전송 API 호출
-            // 인자값 순서: (Service ID, Template ID, 전송 데이터 객체)
-            emailjs.send('service_ut05z6r', 'template_m716jrj', templateParams)
-                .then(function() {
-                    // 6. 비동기 전송 성공(Resolve) 시 처리 로직
-                    statusText.style.color = '#4A8FD7';
-                    statusText.innerText = "✔ 제안서 전송 완료!";
-                    msgInput.value = "";          // 다음 입력을 위해 텍스트 창 초기화
-                    sendBtn.disabled = false;     // 버튼 재활성화
-                }, function(error) {
-                    // 7. 비동기 전송 실패(Reject) 시 에러 핸들링 로직
-                    console.log('Failed...', error);
-                    statusText.style.color = '#ff4d4d';
-                    statusText.innerText = "연동 키 세팅 후 정상 메일함으로 전송됩니다.";
-                    sendBtn.disabled = false;     // 실패하더라도 다시 보낼 수 있게 버튼 재활성화
-                });
-        }
-    </script>
 </body>
 </html>
