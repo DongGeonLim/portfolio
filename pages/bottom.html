@@ -83,6 +83,9 @@
             line-height: 1.6; resize: none; box-sizing: border-box;
             padding-bottom: 8px;
             -webkit-user-select: text; user-select: text;
+
+            touch-action: auto !important; /* 내부 터치 동작 허용 */
+            -webkit-overflow-scrolling: touch;
         }
         .message-textarea::placeholder { color: #444; font-size: 0.88rem; }
 
@@ -139,9 +142,10 @@
         ontouchmove="event.stopPropagation()"
         ontouchend="event.stopPropagation()">
             <textarea id="user-message" class="message-textarea" 
-                      onmousemove="event.stopPropagation()" 
-                      ontouchmove="event.stopPropagation()" 
-                      placeholder="제안이나 피드백을 자유롭게 적어주세요. 회신을 원하시면 메일 주소나 연락처를 본문에 함께 남겨주시면 감사하겠습니다." required></textarea>
+                onmousemove="event.stopPropagation()" 
+                ontouchmove="event.stopPropagation()" 
+                ontouchend="event.stopPropagation()"
+                placeholder="제안이나 피드백을 자유롭게 적어주세요. 회신을 원하시면 메일 주소나 연락처를 본문에 함께 남겨주시면 감사하겠습니다." required></textarea>
             
             <div class="form-bottom-row">
                 <button type="submit" class="submit-btn-rect" id="send-btn">
@@ -176,32 +180,40 @@
         }
 
         function sendProposalMail(e) {
+            // 1. 브라우저 기본 동작 방지 (폼 제출 시 페이지가 새로고침되는 현상 차단)
             e.preventDefault();
             
+            // 2. DOM 요소 추출 (텍스트 입력창, 전송 버튼, 상태 메시지 출력 구역)
             const msgInput = document.getElementById('user-message');
             const sendBtn = document.getElementById('send-btn');
             const statusText = document.getElementById('status-text');
             
+            // 3. 비동기 요청 중 중복 클릭 방지를 위해 버튼 비활성화 및 로딩 상태 표시
             sendBtn.disabled = true;
             statusText.style.color = '#9D4EDD';
             statusText.innerText = "제안서를 전송하는 중...";
 
+            // 4. EmailJS 템플릿에 매핑될 데이터 객체(매개변수) 정의
             const templateParams = {
                 from_email: "Visitor",
-                message: `${msgInput.value}`
+                message: `${msgInput.value}` // 템플릿 리터럴 문법을 사용한 입력값 주입
             };
 
+            // 5. EmailJS SDK를 통한 실제 외부 메일 서버 비동기 전송 API 호출
+            // 인자값 순서: (Service ID, Template ID, 전송 데이터 객체)
             emailjs.send('service_ut05z6r', 'template_m716jrj', templateParams)
                 .then(function() {
+                    // 6. 비동기 전송 성공(Resolve) 시 처리 로직
                     statusText.style.color = '#4A8FD7';
                     statusText.innerText = "✔ 제안서 전송 완료!";
-                    msgInput.value = ""; 
-                    sendBtn.disabled = false;
+                    msgInput.value = "";          // 다음 입력을 위해 텍스트 창 초기화
+                    sendBtn.disabled = false;     // 버튼 재활성화
                 }, function(error) {
+                    // 7. 비동기 전송 실패(Reject) 시 에러 핸들링 로직
                     console.log('Failed...', error);
                     statusText.style.color = '#ff4d4d';
                     statusText.innerText = "연동 키 세팅 후 정상 메일함으로 전송됩니다.";
-                    sendBtn.disabled = false;
+                    sendBtn.disabled = false;     // 실패하더라도 다시 보낼 수 있게 버튼 재활성화
                 });
         }
     </script>

@@ -220,8 +220,6 @@ function finishDrag() {
 
     if (snapTimeout) clearTimeout(snapTimeout);
     snapTimeout = setTimeout(() => {
-        container.style.scrollSnapType = 'x mandatory';
-        vContainer.style.scrollSnapType = 'y mandatory';
         snapTimeout = null;
     }, 700);
 }
@@ -263,6 +261,8 @@ const endAction = (clientX, clientY) => {
     }
 };
 
+const mainContainer = document.getElementById('mainContainer');
+
 // 이벤트 연결
 container.addEventListener('mousedown', (e) => startAction(e.pageX, e.pageY, e.target));
 window.addEventListener('mousemove', (e) => moveAction(e.pageX, e.pageY, e));
@@ -302,21 +302,26 @@ scene.addEventListener('click', (e) => {
     if (isTransitioning) return;
     e.stopPropagation();
     if (isUnfolded) {
+        // 큐브 접기 : 애니메이션 락 활성화 및 관련 UI 클래스 제거
         isTransitioning = true;
         cube.classList.remove('unfolded');
         indicator.classList.remove('active');
+        // 페이지 스크롤 기능을 잠금 처리하여 화면 고정
         container.style.overflow = 'hidden';
         vContainer.style.overflow = 'hidden';
         isUnfolded = false;
+        // 0.1초 뒤 큐브가 완전히 접히면 원래의 3D 회전 각도(-15도, -25도)로 초기화
         setTimeout(() => {
             currentX = -25; currentY = -15;
             cube.style.transform = `rotateX(-15deg) rotateY(-25deg)`;
             isTransitioning = false;
         }, 100); 
     } else {
+        // 큐브 펼치기 : 큐브 회전 각도를 정면(0도)으로 정렬
         isTransitioning = true;
         currentX = 0; currentY = 0;
         cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        // 0.2초 뒤 정면 정렬이 완료되면 전개도를 펼치고 전체 페이지 스크롤 활성화
         setTimeout(() => { 
             cube.classList.add('unfolded'); 
             indicator.classList.add('active');
@@ -327,45 +332,6 @@ scene.addEventListener('click', (e) => {
         }, 200);
     }
 });
-
-// PC 마우스 휠 감지하여 상단 페이지에서 메인으로 복귀시키기
-window.addEventListener('wheel', (e) => {
-    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
-    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
-
-    if (isUnfolded && hIndex === 1 && vIndex === 0 && !isTransitioning) {
-        const topIframe = document.querySelector('#top-page iframe');
-        if (!topIframe) return;
-
-        const iframeDoc = topIframe.contentDocument || topIframe.contentWindow.document;
-        const iframeBody = iframeDoc.body;
-        const iframeHtml = iframeDoc.documentElement;
-
-        const scrollTop = iframeHtml.scrollTop || iframeBody.scrollTop;
-        const scrollHeight = iframeHtml.scrollHeight || iframeBody.scrollHeight;
-        const clientHeight = iframeHtml.clientHeight || iframeBody.clientHeight;
-
-        if (e.deltaY > 100 && (scrollTop + clientHeight >= scrollHeight - 5)) {
-            isTransitioning = true;
-            
-            container.style.scrollBehavior = 'auto';
-            vContainer.style.scrollBehavior = 'auto';
-
-            requestAnimationFrame(() => {
-                container.scrollLeft = window.innerWidth;
-                vContainer.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-                updateIndicator(1, 1);
-            });
-
-            if (snapTimeout) clearTimeout(snapTimeout);
-            snapTimeout = setTimeout(() => {
-                container.style.scrollSnapType = 'x mandatory';
-                vContainer.style.scrollSnapType = 'y mandatory';
-                snapTimeout = null;
-            }, 700);
-        }
-    }
-}, { passive: true });
 
 // iframe 내부 이벤트를 메인 드래그 로직으로 연결
 window.handleIframeStart = function(e, iframeWin) {
@@ -389,8 +355,14 @@ window.handleIframeStart = function(e, iframeWin) {
 };
 
 window.handleIframeMove = function(e, iframeWin) {
+    const target = e.target;
+    if (target && target.tagName === 'TEXTAREA') {
+        return; 
+    }
+    
     if (isTransitioning || !isUnfolded || isDraggingCube) return;
     if (!isPageScrolling && !isVerticalScrolling) return;
+    
     const rect = iframeWin.frameElement.getBoundingClientRect();
     const touch = e.touches ? e.touches[0] : e;
     const pageX = touch.clientX + rect.left;
@@ -402,3 +374,29 @@ window.handleIframeEnd = function(e, iframeWin) {
     const touch = e.changedTouches ? e.changedTouches[0] : (e.touches ? e.touches[0] : e);
     endAction(touch ? touch.pageX : 0, touch ? touch.pageY : 0);
 };
+
+container.addEventListener('wheel', (e) => {
+    // 1. 페이지 전환 중이면 모든 휠 동작 차단
+    if (isTransitioning) {
+        e.preventDefault();
+        return;
+    }
+
+    // 2. 메인 페이지(센터)에서는 휠 동작을 완전히 차단 (드래그 전용)
+    const hIndex = Math.round(container.scrollLeft / window.innerWidth);
+    const vIndex = Math.round(vContainer.scrollTop / window.innerHeight);
+
+    if (!isUnfolded || (hIndex === 1 && vIndex === 1)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+    }
+
+    // 3. 탑/바텀 페이지(vIndex 0 또는 2)일 때:
+    // 휠 이벤트가 부모 컨테이너(container)로 올라가서 페이지 전환을 유발하는 것을 방지
+    // iframe 내부 콘텐츠만 스크롤되도록 이벤트 전파를 완전히 끊습니다.
+    e.stopPropagation();
+    
+    // 주의: 만약 특정 브라우저에서 여전히 전환된다면, 아래 한 줄을 추가하여 강제로 차단하세요.
+    // e.preventDefault(); 
+}, { passive: false });
