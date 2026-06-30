@@ -21,17 +21,20 @@ let scrollStartX, scrollStartY, scrollLeft, scrollTopV;
 let startX, startY;
 let currentX = -25, currentY = -15;
 
-// 초기화 로직
 window.addEventListener('load', () => {
-    container.style.touchAction = 'none';
-    // 초기 위치 강제 고정
+    const loader = document.getElementById('loading-screen');
+    const main = document.getElementById('mainContainer');
+
+    // 센터 좌표 유지
     container.scrollTo({ left: window.innerWidth, behavior: 'auto' });
     vContainer.scrollTo({ top: window.innerHeight, behavior: 'auto' });
-    
     updateIndicator();
-    
-    container.style.scrollBehavior = 'auto';
-    vContainer.style.scrollBehavior = 'auto';
+
+    setTimeout(() => {
+        loader.style.opacity = '0';
+        main.classList.add('ready');
+        setTimeout(() => loader.style.display = 'none', 800);
+    }, 500);
 });
 
 // 모바일 줌 및 더블 탭 확대 잠금

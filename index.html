@@ -8,6 +8,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <div id="loading-screen" style="position:fixed; top:0; left:0; width:100vw; height:100svh; background:#121212; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.8s ease;">
+        <div class="loader-spinner" style="width:40px; height:4px; background:#9D4EDD; animation: pulse 1.5s infinite;"></div>
+        <p style="color:#fff; margin-top:20px; font-family:Pretendard; letter-spacing:4px; font-size:0.8rem;">LOADING</p>
+    </div>
+
+    <style>
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+        #mainContainer { transition: opacity 0.8s ease; opacity: 0; }
+        #mainContainer.ready { opacity: 1; }
+    </style>
 
     <div class="page-indicator" id="indicator"> <!--인디게이터 매핑-->
         <div class="dot top"></div>
