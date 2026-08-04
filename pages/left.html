@@ -120,6 +120,98 @@
         .shop-name { color: #ccc; font-weight: 500; }
         .theme-names { color: #777; font-size: 0.8rem; padding-left: 4px; }
 
+
+        /* '강의평가 보기' 버튼 디자인 (기존 태그 스타일 활용) */
+        .review-btn {
+            background: rgba(157, 78, 221, 0.2);
+            color: #d4affc;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(157, 78, 221, 0.4);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .review-btn:hover {
+            background: rgba(157, 78, 221, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* 모달 팝업 배경 */
+        .review-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .review-modal.active {
+            display: flex;
+        }
+
+        /* 모달 박스 컨테이너 (모바일 대응 스크롤 적용) */
+        .modal-content {
+            background: #1e1e1e;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #fff;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .close-btn:hover { color: #fff; }
+
+        /* 사진들이 나열되는 바디 영역 */
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-body::-webkit-scrollbar { width: 6px; }
+        .modal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        /* 사진 스타일 (너비 맞춤 및 비율 유지) */
+        .modal-body img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block;
+        }
     </style>
 </head>
 <body 
@@ -133,7 +225,7 @@
     <div class="wrapper">
         <div class="page-header">
             <h2>About Me</h2>
-            <p>안녕하세요건이입니다잘부탁드립니다</p>
+            <p>안녕하세요동건이입니다잘부탁드립니다</p>
         </div>
 
         <div class="section-title">
@@ -163,6 +255,23 @@
                 <span class="tag">Unity</span>
                 <span class="tag">Python</span>
                 <span class="tag">강화학습</span>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">실습 조교</h3>
+                <span class="card-date">2026. 03 - 2026. 12</span>
+            </div>
+            <p class="card-sub">Teaching Assistant (TA)</p>
+            <p class="card-desc">
+                1학기 : 객체지향프로그래밍 (Java) <br>
+                2학기 : 프로그래밍기초와실습 (C)
+            </p>
+            <div class="tech-tags">
+                <button class="review-btn" onclick="openReviewModal()">
+                    <i class="fa-solid fa-comment-dots"></i> 강의평가 보기
+                </button>
             </div>
         </div>
         
@@ -207,7 +316,8 @@
                     <div class="shop-line"><span class="shop-name">비트포비아</span><span class="theme-names"> - 강남목욕탕, 3일</span></div>
                     <div class="shop-line"><span class="shop-name">단편선</span><span class="theme-names"> - 그림자 없는 상자, 사그행부</span></div>
                     <div class="shop-line"><span class="shop-name">룸즈에이</span><span class="theme-names"> - 쎄비지, 메가 게임</span></div>
-                    <div class="shop-line"><span class="shop-name">기타 단일 매장</span><span class="theme-names"> - 넥스트에디션(카르텔), 셜록홈즈(타인은 지옥이다), 던전(대호시장 살인사건), 포인트나인(시간이 멈춘 마을), 도어이스케이프(비), 판타스트릭(태초의 신부), 초상화(Hiraeth), 오늘의한페이지(Buddy), 프랭크(브루클린 마이 러브)</span></div>
+                    <div class="shop-line"><span class="shop-name">프랭크의 골동품가게</span><span class="theme-names"> - 브루클린 마이 러브, 마이 프라이빗 헤븐, 플랜 투 세이브 마이 디어</span></div>
+                    <div class="shop-line"><span class="shop-name">기타 단일 매장</span><span class="theme-names"> - 넥스트에디션(카르텔), 셜록홈즈(타인은 지옥이다), 던전(대호시장 살인사건), 포인트나인(시간이 멈춘 마을), 도어이스케이프(비), 판타스트릭(태초의 신부), 초상화(Hiraeth), 오늘의한페이지(Buddy)</span></div>
                 </div>
 
                 <div class="region-block">
@@ -228,10 +338,11 @@
 
                 <div class="region-block">
                     <div class="region-name"><i class="fa-solid fa-location-dot"></i> 기타 구역</div>
-                    <div class="shop-line"><span class="shop-name">부평 지점</span><span class="theme-names"> - 어메이즈드(이탈리안 잡, REC, 하시마, SHIFT), 넥스트에디션(THISMAN), 둠이스케이프(슬래셔)</span></div>
-                    <div class="shop-line"><span class="shop-name">부산 지점</span><span class="theme-names"> - 마스터키(칼퇴, 세이프티룸, 키키키키키, bang)</span></div>
-                    <div class="shop-line"><span class="shop-name">혜화 지점</span><span class="theme-names"> - 에필로그(monday night), 탐정의방(엘리트 고시원), 덤앤더머(러브클리닉)</span></div>
-                    <div class="shop-line"><span class="shop-name">기타 지역</span><span class="theme-names"> - 마곡 링크월드(곤충커키우기, 웁스리페어), 잠실 셜록홈즈(단잠)/마스터키(이스케이프플랜), 왕십리 더코드(피의 일요일), 성수 레토(호텔 레토)/단편선(뱃사람의 별), 성남 씨이스케이프(Odd Bar)</span></div>
+                    <div class="shop-line"><span class="shop-name">부평 지역</span><span class="theme-names"> - 어메이즈드(이탈리안 잡, REC, 하시마, SHIFT), 넥스트에디션(THISMAN), 둠이스케이프(슬래셔)</span></div>
+                    <div class="shop-line"><span class="shop-name">부산 지역</span><span class="theme-names"> - 마스터키(칼퇴, 세이프티룸, 키키키키키, bang)</span></div>
+                    <div class="shop-line"><span class="shop-name">혜화 지역</span><span class="theme-names"> - 에필로그(monday night), 탐정의방(엘리트 고시원), 덤앤더머(러브클리닉)</span></div>
+                    <div class="shop-line"><span class="shop-name">잠실 지역</span><span class="theme-names"> - 셜록홈즈(단잠), 마스터키(이스케이프플랜), 찰리이스케이프(퀴즈카페)</span></div>
+                    <div class="shop-line"><span class="shop-name">기타 지역</span><span class="theme-names"> - 마곡 링크월드(곤충커키우기, 웁스리페어), 왕십리 더코드(피의 일요일), 성수 레토(호텔 레토)/단편선(뱃사람의 별), 성남 씨이스케이프(Odd Bar)</span></div>
                 </div>
             </div>
         </div>
@@ -241,14 +352,58 @@
                 <h3 class="card-title"><i class="fa-solid fa-calculator" style="color:#9D4EDD; margin-right:5px;"></i> 사격지휘 계산병</h3>
                 <span class="card-date">2023. 03 - 2024.09</span>
             </div>
-            <p class="card-desc">작전 환경에서 기상 요소, 지형 좌표, 투사체 물리 역학 데이터를 기반으로 사격 제원 값을 실시간 정밀 산출함. (1사단 포병여단 59포병대대)</p>
+            <p class="card-sub">1사단 포병여단 59포병대대</p>
+            <p class="card-desc">작전 환경에서 기상 요소, 지형 좌표, 투사체 역학 자료를 기반으로 사격 제원 값을 실시간 정밀 산출함.</p>
             <div class="tech-tags">
-                <span class="tag">육군</span>
                 <span class="tag">병장 만기전역</span>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa-solid fa-key" style="color:#9D4EDD; margin-right:5px;"></i> 방탈출 게임마스터
+                </h3>
+                <span class="card-date">2026. 07 - 근무 중</span>
+            </div>
+            <p class="card-sub">프랭크의 골동품가게 (강남점)</p>
+            <p class="card-desc">
+                오프라인 몰입형 콘텐츠 매장에서 게임마스터(GM)로 근무하며 매장 운영 및 룸 세팅·리셋 수행.<br>
+                실시간 모니터링에 의한 장치 컨트롤과 직원 연출을 통해 체험자 최적 몰입 경험 제공.
+            </p>
+            <div class="tech-tags">
+                <span class="tag">장치 & 룸 리셋</span>
+                <span class="tag">체험자 응대</span>
+                <span class="tag">매장 관리</span>
+            </div>
+        </div>
+
+        <!-- 강의평가 구조 -->
+        <div id="reviewModal" class="review-modal" onclick="closeReviewModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>강의평가</h3>
+                    <button class="close-btn" onclick="closeReviewModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <img src="../media/review/review5.jpg" alt="강의평가 5">
+                    <img src="../media/review/review1.jpg" alt="강의평가 1">
+                    <img src="../media/review/review2.jpg" alt="강의평가 2">
+                    <img src="../media/review/review3.jpg" alt="강의평가 3">
+                    <img src="../media/review/review4.jpg" alt="강의평가 4">
+                </div>
             </div>
         </div>
     </div>
     </div>
 
+    <!-- 열람 제어용 자바스크립트 추가 -->
+    <script>
+        function openReviewModal() {
+            document.getElementById('reviewModal').classList.add('active');
+        }
+        function closeReviewModal(e) {
+            document.getElementById('reviewModal').classList.remove('active');
+        }
+    </script>
 </body>
 </html>

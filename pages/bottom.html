@@ -48,19 +48,19 @@
 
         .project-showcase { 
             margin-top: 20px; 
-            border-top: none; /* 선 제거 */
+            border-top: none; 
             padding-top: 20px; 
             position: relative;
         }
 
-        /* 두 섹션 사이를 잇는 '확장' 느낌의 점 3개 표시 */
+        /* 두 섹션 사이를 잇는 점 3개 표시 */
         .transition-dots {
             text-align: center; color: #555; font-size: 1.5rem; 
             margin: 30px 0; letter-spacing: 10px;
         }
             
         .vertical-grid {
-            display: flex; flex-direction: column; gap: 40px; margin-top: 30px;
+            display: flex; flex-direction: column; gap: 30px; margin-top: 20px;
         }
         .vertical-item {
             width: 100%;
@@ -69,11 +69,10 @@
             width: 100%; aspect-ratio: 16 / 9;
             background: #000; border-radius: 12px; overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .aspect-16-9 img, .aspect-16-9 video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* 제목 중앙 정렬을 위한 스타일 */
         .center-text { text-align: center; }
     </style>
 </head>
@@ -86,6 +85,7 @@
   ontouchend="parent.handleIframeEnd(event, window)">
 
     <div class="archive-wrapper">
+        <!-- 첫 번째 섹션: 시각적인 연출 -->
         <div class="section-tag">Visual Effect</div>
         <h1 class="main-title">시각적인 연출</h1>
         
@@ -102,27 +102,29 @@
             <strong>마술</strong> 같은 연출이 정교하게 설계되었을 때,<br>
             <strong>체험자</strong>는 비현실적인 몰입의 경험을 누렸고 만족도가 높았습니다.
         </p>
-    </div>
 
-    <div class="transition-dots">···</div>
+        <!-- 중간 연결점 -->
+        <div class="transition-dots">···</div>
 
-    <div class="project-showcase center-text">
-        <div class="section-tag">Beyond Reality</div>
-        <h1 class="main-title" style="font-size: 1.4rem;">가상 공간에서의 몰입</h1>
-        
-        <div class="vertical-grid">
-            <div class="vertical-item">
-                <div class="aspect-16-9">
-                    <img src="../media/TwelveMinutes.jpg" alt="Original Inspiration">
-                </div>
-                <p class="desc-text"><strong>ORIGINAL:</strong> Twelve Minutes(2021, Annapurna Interactive)</p>
-            </div>
+        <!-- 두 번째 섹션: 가상 공간에서의 몰입 (archive-wrapper 안으로 이동) -->
+        <div class="project-showcase center-text">
+            <div class="section-tag">Beyond Reality</div>
+            <h1 class="main-title" style="font-size: 1.4rem;">가상 공간에서의 몰입</h1>
             
-            <div class="vertical-item">
-                <div class="aspect-16-9">
-                    <video src="../media/wakTop.MP4" autoplay loop muted playsinline preload="none"></video>
+            <div class="vertical-grid">
+                <div class="vertical-item">
+                    <div class="aspect-16-9">
+                        <img src="../media/TwelveMinutes.jpg" alt="Original Inspiration">
+                    </div>
+                    <p class="desc-text"><strong>ORIGINAL:</strong> Twelve Minutes(2021, Annapurna Interactive)</p>
                 </div>
-                <p class="desc-text"><strong>RE-DESIGN:</strong> 시간 루프와 화재 연출</p>
+                
+                <div class="vertical-item">
+                    <div class="aspect-16-9">
+                        <video src="../media/wakTop.MP4" autoplay loop muted playsinline preload="none"></video>
+                    </div>
+                    <p class="desc-text"><strong>RE-DESIGN:</strong> 시간 루프와 화재 연출</p>
+                </div>
             </div>
         </div>
     </div>
